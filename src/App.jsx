@@ -672,34 +672,73 @@ export default function App() {
                         </button>
                       </div>
 
-                      {/* Document Review Sub-table */}
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {Object.entries(u.documents).map(([docKey, docVal]) => (
-                          <div key={docKey} className="bg-white rounded-xl p-4 border border-gray-200 flex flex-col justify-between">
-                            <div>
-                              <div className="flex justify-between items-center mb-1.5">
-                                <span className="text-[11px] font-bold text-gray-500 uppercase">
-                                  {docKey === 'suratPermohonan' ? 'Surat Permohonan' :
-                                   docKey === 'profilKlinik' ? 'Profil & Denah' :
-                                   docKey === 'suratIzinPraktik' ? 'SIP & Nakes' : 'Kelayakan Alat'}
-                                </span>
-                                <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
-                                  docVal.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' :
-                                  docVal.status === 'Catatan Perbaikan' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
-                                }`}>
-                                  {docVal.status}
-                                </span>
-                              </div>
-                              <p className="text-xs font-medium text-gray-800 truncate mb-2" title={docVal.name}>{docVal.name}</p>
-                              
-                              <div className="flex items-center space-x-2 mb-3">
-                                <button 
-                                  onClick={() => setPreviewDoc({ title: docKey, name: docVal.name, status: docVal.status, note: docVal.note, clinic: u.clinicName })}
-                                  className="text-[11px] text-emerald-700 hover:underline font-bold flex items-center space-x-1">
-                                  <Eye className="w-3 h-3" />
-                                  <span>Lihat File</span>
-                                </button>
-                              </div>
+                      {/* DOCUMENT PREVIEW MODAL */}
+      {previewDoc && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-emerald-100 animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
+              <div>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Pratinjau Dokumen Persyaratan</span>
+                <h3 className="text-lg font-extrabold text-gray-900 mt-1">{previewDoc.title}</h3>
+                {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic}</p>}
+              </div>
+              <button 
+                onClick={() => setPreviewDoc(null)}
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-emerald-700 text-white rounded-xl flex items-center justify-center">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{previewDoc.name}</p>
+                    <p className="text-xs text-emerald-700 font-medium">Status: {previewDoc.status}</p>
+                  </div>
+                </div>
+                <a 
+                  href={`#download-${previewDoc.name}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Membuat simulasi unduh atau membuka file PDF
+                    alert(`Membuka dokumen PDF: ${previewDoc.name}`);
+                  }}
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+                  <Download className="w-4 h-4" />
+                  <span>Buka / Unduh PDF</span>
+                </a>
+              </div>
+
+              {/* Kotak Informasi & Simulasi Tampilan Dokumen Asli */}
+              <div className="bg-emerald-900/10 border border-emerald-200 rounded-2xl p-6 text-center flex flex-col items-center justify-center space-y-3">
+                <FileCheck className="w-12 h-12 text-emerald-700" />
+                <p className="text-sm font-bold text-gray-900">Berkas PDF: {previewDoc.name}</p>
+                <p className="text-xs text-gray-600 max-w-md">
+                  File dokumen persyaratan ini dikirim langsung oleh pemohon klinik dan siap untuk divalidasi keasliannya oleh tim verifikator Dinas Kesehatan.
+                </p>
+              </div>
+
+              {previewDoc.note && (
+                <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800">
+                  <span className="font-bold">Catatan Perbaikan:</span> {previewDoc.note}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+              <button 
+                onClick={() => setPreviewDoc(null)}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">
+                Tutup Pratinjau
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
                               {/* Status changer & Note input */}
                               <div className="space-y-2 pt-2 border-t border-gray-100">
