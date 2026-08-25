@@ -2,21 +2,64 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, Check, ArrowRight, ShieldCheck, HelpCircle, FileCheck, Calendar, RefreshCw
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw 
 } from 'lucide-react';
 
+// Daftar 28 Dokumen Persyaratan Perizinan Klinik (SIPERKLIN)
+const LIST_28_DOKUMEN = [
+  { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
+  { key: 'dok_2', title: '2. Profil Lengkap Klinik', desc: 'Visi, misi, struktur organisasi, & layanan' },
+  { key: 'dok_3', title: '3. Akta Pendirian Badan Hukum/Usaha', desc: 'Akta notaris pendirian yayasan/PT/CV' },
+  { key: 'dok_4', title: '4. Pengesahan Badan Hukum dari Kemenkumham', desc: 'Surat keputusan pengesahan resmi' },
+  { key: 'dok_5', title: '5. Bukti Kepemilikan / Penguasaan Tanah & Gedung', desc: 'Sertifikat tanah / Akta sewa bangunan minimal 5 tahun' },
+  { key: 'dok_6', title: '6. Izin Mendirikan Bangunan (IMB) / PBG', desc: 'Persetujuan Bangunan Gedung sesuai peruntukan' },
+  { key: 'dok_7', title: '7. Surat Layanan / Kelaikan Fungsi Gedung (SLF)', desc: 'Sertifikat kelaikan fungsi bangunan' },
+  { key: 'dok_8', title: '8. Surat Izin Praktik (SIP) Dokter Penanggung Jawab', desc: 'SIP dokter penanggung jawab klinik' },
+  { key: 'dok_9', title: '9. Daftar Seluruh Tenaga Medis & Paramedis', desc: 'Daftar nama lengkap beserta kualifikasi' },
+  { key: 'dok_10', title: '10. Salinan SIP Dokter & Tenaga Kesehatan Lainnya', desc: 'Kumpulan SIP seluruh nakes yang bertugas' },
+  { key: 'dok_11', title: '11. Surat Perjanjian Kerja Sama (PKS) Tenaga Medis', desc: 'Kontrak kerja tenaga kesehatan' },
+  { key: 'dok_12', title: '12. Surat Pernyataan Sanggup Mematuhi Peraturan', desc: 'Surat pernyataan bermaterai' },
+  { key: 'dok_13', title: '13. Denah Ruangan / Layout Klinik (Blueprint)', desc: 'Denah bangunan ukuran jelas per ruangan' },
+  { key: 'dok_14', title: '14. Dokumen Upaya Pengelolaan & Pemantauan Lingkungan (UKL-UPL / SPPL)', desc: 'Izin lingkungan hidup' },
+  { key: 'dok_15', title: '15. Kerjasama Pengolahan Limbah Medis B3', desc: 'PKS pihak ketiga pengangkut limbah medis B3' },
+  { key: 'dok_16', title: '16. Manifest Pengolahan Limbah B3 Bulanan', desc: 'Bukti pengelolaan limbah medis' },
+  { key: 'dok_17', title: '17. Daftar Inventaris Alat Kesehatan (Alkes)', desc: 'Daftar lengkap alkes utama & pendukung' },
+  { key: 'dok_18', title: '18. Sertifikat Kalibrasi Alat Kesehatan', desc: 'Bukti kalibrasi alkes yang masih berlaku' },
+  { key: 'dok_19', title: '19. SOP Pelayanan Medis & Keperawatan', desc: 'Standar Operasional Prosedur pelayanan klinik' },
+  { key: 'dok_20', title: '20. SOP Pencegahan & Pengendalian Infeksi (PPI)', desc: 'Prosedur pencegahan infeksi nosokomial' },
+  { key: 'dok_21', title: '21. SOP Penanganan Kegawatdaruratan (Emergency)', desc: 'Prosedur rujukan & gawat darurat' },
+  { key: 'dok_22', title: '22. Dokumen Formularium Obat & Alat Kesehatan', desc: 'Daftar sediaan obat yang disediakan di klinik' },
+  { key: 'dok_23', title: '23. Surat Izin Apotek (SIA) / Ruang Farmasi', desc: 'Perizinan pengelolaan obat' },
+  { key: 'dok_24', title: '24. Surat Penunjukan Apoteker Penanggung Jawab', desc: 'SIPA Apoteker yang bertugas' },
+  { key: 'dok_25', title: '25. Sistem Rekam Medis (Manual / Elektronik)', desc: 'Kebijakan & SOP pengelolaan rekam medis pasien' },
+  { key: 'dok_26', title: '26. Bukti Kerjasama Rujukan (MoU RS Rujukan)', desc: 'MoU dengan Rumah Sakit terdekat' },
+  { key: 'dok_27', title: '27. Pas Foto & KTP Penanggung Jawab Klinik', desc: 'Identitas resmi pimpinan / penanggung jawab' },
+  { key: 'dok_28', title: '28. Surat Rekomendasi dari Organisasi Profesi (IDI Cabang)', desc: 'Rekomendasi IDI / asosiasi fasyankes setempat' },
+];
+
+// Helper untuk membuat struktur awal 28 dokumen kosong
+const generateInitialDocuments = () => {
+  const docs = {};
+  LIST_28_DOKUMEN.forEach((item, index) => {
+    docs[item.key] = {
+      name: index === 0 ? 'Surat_Permohonan_Operasional.pdf' : 'Belum diunggah',
+      url: '',
+      status: index === 0 ? 'Sudah Terverifikasi' : 'Menunggu Verifikasi',
+      note: ''
+    };
+  });
+  return docs;
+};
+
 export default function App() {
-  // Navigation & Auth State
-  const [currentView, setCurrentView] = useState('login'); // 'login', 'register', 'user-dashboard', 'admin-dashboard'
-  const [authTab, setAuthTab] = useState('login'); // 'login' or 'register'
+  const [currentView, setCurrentView] = useState('login');
+  const [authTab, setAuthTab] = useState('login');
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Form Inputs - Login
   const [loginInput, setLoginInput] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  // Form Inputs - Register
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
@@ -24,9 +67,8 @@ export default function App() {
   const [regClinicName, setRegClinicName] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
 
-  // Users Database in LocalStorage
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('siperklin_users');
+    const saved = localStorage.getItem('siperklin_users_28');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { /* ignore */ }
     }
@@ -40,38 +82,27 @@ export default function App() {
         clinicName: 'Klinik Pratama Sehat Mandiri',
         status: 'Sedang Diperiksa',
         submissionDate: '2026-08-20',
-        documents: {
-          suratPermohonan: { name: 'Surat_Permohonan_SehatMandiri.pdf', url: '', status: 'Sudah Terverifikasi', note: 'Dokumen lengkap sesuai ketentuan.' },
-          profilKlinik: { name: 'Profil_Klinik_Pratama.pdf', url: '', status: 'Catatan Perbaikan', note: 'Mohon lampirkan denah ruangan secara lebih detail.' },
-          suratIzinPraktik: { name: 'SIP_Dokter_PenanggungJawab.pdf', url: '', status: 'Sudah Terverifikasi', note: '' },
-          suratKelayakan: { name: 'Sertifikat_Kelayakan_Alat.pdf', url: '', status: 'Menunggu Verifikasi', note: '' }
-        }
+        documents: generateInitialDocuments()
       }
     ];
   });
 
-  // Save users to localStorage
   useEffect(() => {
-    localStorage.setItem('siperklin_users', JSON.stringify(users));
+    localStorage.setItem('siperklin_users_28', JSON.stringify(users));
   }, [users]);
 
-  // Preview Modal State
   const [previewDoc, setPreviewDoc] = useState(null);
 
-  // Handle Login Submission
   const handleLogin = (e) => {
     e.preventDefault();
     setLoginError('');
 
-    // Check Admin Credentials
     if ((loginInput.trim() === 'yankesbadung' || loginInput.trim() === 'yankesbadung@badungkab.go.id') && loginPassword === 'Pelayanankesehatan1') {
-      const adminUser = { role: 'admin', name: 'Administrator Bidang Yankes', email: 'yankesbadung' };
-      setCurrentUser(adminUser);
+      setCurrentUser({ role: 'admin', name: 'Administrator Bidang Yankes', email: 'yankesbadung' });
       setCurrentView('admin-dashboard');
       return;
     }
 
-    // Check Registered Users
     const foundUser = users.find(
       u => (u.email === loginInput.trim() || u.name.toLowerCase() === loginInput.trim().toLowerCase() || u.phone === loginInput.trim()) && u.password === loginPassword
     );
@@ -84,7 +115,6 @@ export default function App() {
     }
   };
 
-  // Handle Registration
   const handleRegister = (e) => {
     e.preventDefault();
     setRegSuccess('');
@@ -95,7 +125,7 @@ export default function App() {
     }
 
     if (users.some(u => u.email === regEmail)) {
-      alert('Email sudah terdaftar. Silakan gunakan email lain atau masuk.');
+      alert('Email sudah terdaftar. Silakan gunakan email lain.');
       return;
     }
 
@@ -108,28 +138,15 @@ export default function App() {
       clinicName: regClinicName,
       status: 'Menunggu Verifikasi',
       submissionDate: new Date().toISOString().split('T')[0],
-      documents: {
-        suratPermohonan: { name: 'Surat_Permohonan_Resmi.pdf', url: '', status: 'Menunggu Verifikasi', note: '' },
-        profilKlinik: { name: 'Profil_Klinik.pdf', url: '', status: 'Menunggu Verifikasi', note: '' },
-        suratIzinPraktik: { name: 'Daftar_Tenaga_Medis.pdf', url: '', status: 'Menunggu Verifikasi', note: '' },
-        suratKelayakan: { name: 'Surat_Kelayakan_Lokasi.pdf', url: '', status: 'Menunggu Verifikasi', note: '' }
-      }
+      documents: generateInitialDocuments()
     };
 
     setUsers([...users, newUser]);
-    setRegSuccess('Pendaftaran berhasil! Silakan masuk menggunakan akun yang telah didaftarkan.');
-    setRegName('');
-    setRegEmail('');
-    setRegPhone('');
-    setRegPassword('');
-    setRegClinicName('');
-    setTimeout(() => {
-      setAuthTab('login');
-      setRegSuccess('');
-    }, 2000);
+    setRegSuccess('Pendaftaran berhasil! Silakan masuk menggunakan akun baru Anda.');
+    setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName('');
+    setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
   };
 
-  // Handle User Document Upload with Real Object URL for Preview
   const handleUploadDoc = (docKey, file) => {
     const fileUrl = URL.createObjectURL(file);
     const updatedUsers = users.map(u => {
@@ -138,18 +155,15 @@ export default function App() {
           ...u.documents,
           [docKey]: { name: file.name, url: fileUrl, status: 'Menunggu Verifikasi', note: '' }
         };
-        const updatedUser = { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
-        return updatedUser;
+        return { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
       }
       return u;
     });
     setUsers(updatedUsers);
-    const updatedCurrent = updatedUsers.find(u => u.id === currentUser.id);
-    setCurrentUser(updatedCurrent);
-    alert('Dokumen PDF berhasil diunggah dan dikirim ke Admin!');
+    setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
+    alert('Dokumen PDF berhasil diunggah!');
   };
 
-  // Admin: Update Document Status
   const handleAdminUpdateDocStatus = (userId, docKey, newStatus, newNote) => {
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
@@ -157,7 +171,6 @@ export default function App() {
           ...u.documents,
           [docKey]: { ...u.documents[docKey], status: newStatus, note: newNote }
         };
-        
         const statuses = Object.values(updatedDocs).map(d => d.status);
         let overallStatus = 'Sedang Diperiksa';
         if (statuses.every(s => s === 'Sudah Terverifikasi')) {
@@ -165,7 +178,6 @@ export default function App() {
         } else if (statuses.some(s => s === 'Catatan Perbaikan')) {
           overallStatus = 'Catatan Perbaikan';
         }
-
         return { ...u, documents: updatedDocs, status: overallStatus };
       }
       return u;
@@ -173,16 +185,14 @@ export default function App() {
     setUsers(updatedUsers);
   };
 
-  // Admin: Delete User
   const handleDeleteUser = (userId) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus pemohon/klinik ini beserta seluruh dokumennya?')) {
-      const updatedUsers = users.filter(u => u.id !== userId);
-      setUsers(updatedUsers);
+    if (window.confirm('Yakin ingin menghapus pemohon ini?')) {
+      setUsers(users.filter(u => u.id !== userId));
     }
   };
 
   const totalPengajuan = users.length;
-  const sedangDiperiksaCount = users.filter(u => u.status === 'Sedang Diperiksa' || u.status === 'Menunggu Verifikasi' || u.status === 'Catatan Perbaikan').length;
+  const sedangDiperiksaCount = users.filter(u => u.status !== 'Sudah Terverifikasi').length;
   const sudahTerverifikasiCount = users.filter(u => u.status === 'Sudah Terverifikasi').length;
   const currentDateFormatted = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -211,9 +221,7 @@ export default function App() {
                 <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
                 <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : currentUser.clinicName}</p>
               </div>
-              <button 
-                onClick={() => { setCurrentUser(null); setCurrentView('login'); setLoginInput(''); setLoginPassword(''); }}
-                className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200">
+              <button onClick={() => { setCurrentUser(null); setCurrentView('login'); }} className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200">
                 <LogOut className="w-4 h-4" />
                 <span>Keluar</span>
               </button>
@@ -221,26 +229,26 @@ export default function App() {
           ) : (
             <div className="flex items-center space-x-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Bidang Pelayanan Kesehatan Dinas Kesehatan Kabupaten Badung</span>
+              <span>Dinas Kesehatan Kabupaten Badung</span>
             </div>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT AREA */}
+      {/* MAIN CONTAINER */}
       <main className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
         
-        {/* LOGIN / REGISTER VIEW */}
+        {/* LOGIN / REGISTER */}
         {currentView === 'login' && (
           <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-emerald-100">
-            <div className="lg:col-span-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 p-8 sm:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+            <div className="lg:col-span-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 p-8 sm:p-12 text-white flex flex-col justify-between">
               <div>
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
-                  Satu portal terpadu untuk pengurusan kelayakan administrasi rekomendasi operasional klinik tingkat Pratama maupun Utama di Kabupaten Badung.
+                  Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
                 </p>
               </div>
               <div className="pt-6 border-t border-emerald-700/60 text-xs text-emerald-200">
@@ -250,147 +258,80 @@ export default function App() {
 
             <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center">
               <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-8 max-w-sm">
-                <button 
-                  onClick={() => { setAuthTab('login'); setRegSuccess(''); }}
-                  className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition flex items-center justify-center space-x-2 ${authTab === 'login' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}>
-                  <Lock className="w-4 h-4" />
-                  <span>Masuk Akun</span>
-                </button>
-                <button 
-                  onClick={() => { setAuthTab('register'); setLoginError(''); }}
-                  className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition flex items-center justify-center space-x-2 ${authTab === 'register' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}>
-                  <User className="w-4 h-4" />
-                  <span>Pendaftaran Baru</span>
-                </button>
+                <button onClick={() => setAuthTab('login')} className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition ${authTab === 'login' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500'}`}>Masuk Akun</button>
+                <button onClick={() => setAuthTab('register')} className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition ${authTab === 'register' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500'}`}>Pendaftaran Baru</button>
               </div>
 
               {authTab === 'login' && (
                 <form onSubmit={handleLogin} className="space-y-5">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-1">Selamat Datang Kembali</h2>
-                    <p className="text-xs text-gray-500">Masukkan username/email/no. telp dan password untuk mengakses rekomendasi.</p>
-                  </div>
-
-                  {loginError && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl flex items-center space-x-2">
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>{loginError}</span>
-                    </div>
-                  )}
-
+                  <h2 className="text-xl font-bold text-gray-900 mb-1">Selamat Datang Kembali</h2>
+                  {loginError && <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl flex items-center space-x-2"><AlertCircle className="w-4 h-4 flex-shrink-0" /><span>{loginError}</span></div>}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Username / Email / No. Telp</label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                        <Mail className="w-4 h-4" />
-                      </span>
-                      <input 
-                        type="text" 
-                        required
-                        value={loginInput}
-                        onChange={(e) => setLoginInput(e.target.value)}
-                        placeholder="contoh: yankesbadung, 081234567890 atau email"
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                      />
-                    </div>
+                    <input type="text" required value={loginInput} onChange={(e) => setLoginInput(e.target.value)} placeholder="yankesbadung / 081234567890" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
-
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Password</label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                        <Lock className="w-4 h-4" />
-                      </span>
-                      <input 
-                        type="password" 
-                        required
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                      />
-                    </div>
+                    <input type="password" required value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
-
                   <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
-                    <span>Masuk Sekarang</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
-
-                  <div className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
-                    <p className="font-bold mb-1">💡 Informasi Login:</p>
-                    <p>• <strong>Admin:</strong> username <code className="bg-white px-1 py-0.5 rounded font-bold text-emerald-700">yankesbadung</code> | password <code className="bg-white px-1 py-0.5 rounded font-bold text-emerald-700">Pelayanankesehatan1</code></p>
-                    <p className="mt-1">• <strong>User Pemohon:</strong> Wajib mendaftar terlebih dahulu pada tab "Pendaftaran Baru".</p>
+                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700">Pelayanankesehatan1</code></p>
                   </div>
                 </form>
               )}
 
               {authTab === 'register' && (
                 <form onSubmit={handleRegister} className="space-y-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-1">Pendaftaran Akun Klinik</h2>
-                    <p className="text-xs text-gray-500">Lengkapi formulir di bawah untuk mengajukan permohonan rekomendasi klinik.</p>
-                  </div>
-
-                  {regSuccess && (
-                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-xl flex items-center space-x-2">
-                      <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
-                      <span>{regSuccess}</span>
-                    </div>
-                  )}
-
+                  <h2 className="text-xl font-bold text-gray-900 mb-1">Pendaftaran Akun Klinik</h2>
+                  {regSuccess && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-xl"><span>{regSuccess}</span></div>}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pemohon</label>
-                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Dr. Nama Lengkap & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Dr. Nama & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Klinik</label>
-                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama / Utama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Email Aktif</label>
-                      <input type="email" required value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="email@klinik.com" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Email</label>
+                      <input type="email" required value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="email@klinik.com" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nomor Telp / WhatsApp</label>
-                      <input type="text" required value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="081234567890" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">No. WhatsApp</label>
+                      <input type="text" required value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="081234567890" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
-
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Password Akun</label>
-                    <input type="password" required value={regPassword} onChange={(e) => setRegPassword(e.target.value)} placeholder="Minimal 6 karakter" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Password</label>
+                    <input type="password" required value={regPassword} onChange={(e) => setRegPassword(e.target.value)} placeholder="Minimal 6 karakter" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                   </div>
-
-                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 mt-2">
-                    <span>Daftar Sekarang</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition">Daftar Sekarang</button>
                 </form>
               )}
             </div>
           </div>
         )}
 
-        {/* USER DASHBOARD VIEW */}
+        {/* USER DASHBOARD (28 DOKUMEN) */}
         {currentView === 'user-dashboard' && currentUser && currentUser.role !== 'admin' && (
           <div className="w-full max-w-6xl space-y-6">
             <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <span className="bg-emerald-700 text-emerald-100 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-600">Dashboard Pemohon</span>
+                <span className="bg-emerald-700 text-emerald-100 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-600">Dashboard Pemohon (28 Dokumen Wajib)</span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">{currentUser.clinicName}</h1>
-                <p className="text-emerald-100 text-sm mt-1">Penanggung Jawab: {currentUser.name} | WhatsApp: {currentUser.phone}</p>
+                <p className="text-emerald-100 text-sm mt-1">PJ: {currentUser.name} | WhatsApp: {currentUser.phone}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20">
                 <p className="text-xs text-emerald-200 font-medium">Status Pengajuan</p>
                 <p className="text-sm font-bold flex items-center space-x-1.5 mt-0.5">
                   {currentUser.status === 'Sudah Terverifikasi' && <CheckCircle2 className="w-4 h-4 text-emerald-300" />}
                   {currentUser.status === 'Sedang Diperiksa' && <Clock className="w-4 h-4 text-amber-300" />}
-                  {currentUser.status === 'Catatan Perbaikan' && <AlertCircle className="w-4 h-4 text-red-300" />}
                   <span>{currentUser.status}</span>
                 </p>
               </div>
@@ -399,73 +340,55 @@ export default function App() {
             <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8">
               <div className="mb-6 flex justify-between items-center">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Unggah Berkas Persyaratan Rekomendasi Klinik</h2>
-                  <p className="text-xs text-gray-500">Unggah file berformat PDF untuk diverifikasi oleh Tim Dinas Kesehatan Badung.</p>
+                  <h2 className="text-lg font-bold text-gray-900">Daftar 28 Berkas Persyaratan Perizinan Klinik</h2>
+                  <p className="text-xs text-gray-500">Silakan unggah seluruh berkas PDF persyaratan di bawah ini untuk diverifikasi oleh Dinkes Badung.</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { key: 'suratPermohonan', title: '1. Surat Permohonan Resmi', desc: 'Surat permohonan rekomendasi bermaterai' },
-                  { key: 'profilKlinik', title: '2. Profil & Denah Klinik', desc: 'Struktur organisasi & denah ruangan klinik' },
-                  { key: 'suratIzinPraktik', title: '3. SIP & Daftar Tenaga Medis', desc: 'Surat Izin Praktik dokter & nakes terkait' },
-                  { key: 'suratKelayakan', title: '4. Sertifikat Kelayakan Alat & Gedung', desc: 'Hasil uji kelayakan alat kesehatan & bangunan' },
-                ].map((item) => {
-                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Belum Ada', note: '' };
+              {/* GRID 28 DOKUMEN */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
+                {LIST_28_DOKUMEN.map((item) => {
+                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
                   return (
-                    <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between">
+                    <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-300 transition">
                       <div>
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-bold text-gray-800 text-sm">{item.title}</h3>
-                            <p className="text-xs text-gray-500">{item.desc}</p>
-                          </div>
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                        <div className="flex justify-between items-start mb-1.5">
+                          <h3 className="font-bold text-gray-800 text-xs sm:text-sm">{item.title}</h3>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                             docInfo.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' :
                             docInfo.status === 'Catatan Perbaikan' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
                           }`}>
                             {docInfo.status}
                           </span>
                         </div>
+                        <p className="text-[11px] text-gray-500 mb-2">{item.desc}</p>
 
-                        <div className="my-3 py-2 px-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between">
+                        <div className="py-1.5 px-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2 truncate">
-                            <FileText className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                            <FileText className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                             <span className="text-xs text-gray-700 font-medium truncate">{docInfo.name}</span>
                           </div>
                           {docInfo.name !== 'Belum diunggah' && (
-                            <button 
-                              onClick={() => setPreviewDoc({ title: item.title, name: docInfo.name, url: docInfo.url, status: docInfo.status, note: docInfo.note })}
-                              className="text-xs text-emerald-700 hover:underline font-bold flex items-center space-x-1 flex-shrink-0 ml-2">
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>Lihat</span>
+                            <button onClick={() => setPreviewDoc({ title: item.title, name: docInfo.name, url: docInfo.url, status: docInfo.status, note: docInfo.note })} className="text-xs text-emerald-700 font-bold hover:underline flex items-center space-x-1 ml-2">
+                              <Eye className="w-3 h-3" /><span>Lihat</span>
                             </button>
                           )}
                         </div>
 
                         {docInfo.note && (
-                          <div className="mb-3 p-2.5 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800">
-                            <span className="font-bold">Catatan Admin:</span> {docInfo.note}
+                          <div className="mb-2 p-2 bg-red-50 border border-red-100 rounded-xl text-[11px] text-red-800">
+                            <span className="font-bold">Catatan:</span> {docInfo.note}
                           </div>
                         )}
                       </div>
 
-                      <div className="pt-3 border-t border-gray-200 flex items-center justify-between">
-                        <label className="cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-2 px-4 rounded-xl transition shadow-sm flex items-center space-x-1.5">
-                          <Upload className="w-3.5 h-3.5" />
+                      <div className="pt-2 border-t border-gray-200 flex items-center justify-between">
+                        <label className="cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold py-1.5 px-3 rounded-xl transition flex items-center space-x-1 shadow-sm">
+                          <Upload className="w-3 h-3" />
                           <span>{docInfo.name === 'Belum diunggah' ? 'Unggah PDF' : 'Ganti PDF'}</span>
-                          <input 
-                            type="file" 
-                            accept="application/pdf"
-                            className="hidden"
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                handleUploadDoc(item.key, e.target.files[0]);
-                              }
-                            }}
-                          />
+                          <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadDoc(item.key, e.target.files[0]); }} />
                         </label>
-                        <span className="text-[11px] text-gray-400">Format PDF</span>
+                        <span className="text-[10px] text-gray-400">PDF max 10MB</span>
                       </div>
                     </div>
                   );
@@ -475,13 +398,13 @@ export default function App() {
           </div>
         )}
 
-        {/* ADMIN DASHBOARD VIEW */}
+        {/* ADMIN DASHBOARD */}
         {currentView === 'admin-dashboard' && currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
             <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex justify-between items-center">
               <div>
                 <span className="bg-emerald-800 text-emerald-200 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-700">Panel Administrator</span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Manajemen & Verifikasi Pengajuan Klinik</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Verifikasi 28 Dokumen Klinik Pemohon</h1>
                 <p className="text-gray-300 text-xs mt-1">Dinas Kesehatan Kabupaten Badung • {currentDateFormatted}</p>
               </div>
             </div>
@@ -489,42 +412,23 @@ export default function App() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 flex items-center space-x-4">
                 <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center font-bold text-xl">{totalPengajuan}</div>
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Jumlah Pengajuan</p>
-                  <p className="text-xl font-extrabold text-gray-900">{totalPengajuan} Klinik</p>
-                </div>
+                <div><p className="text-xs font-bold text-gray-400 uppercase">Total Pengajuan</p><p className="text-xl font-extrabold text-gray-900">{totalPengajuan} Klinik</p></div>
               </div>
-
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-amber-100 flex items-center space-x-4">
                 <div className="w-14 h-14 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center font-bold text-xl">{sedangDiperiksaCount}</div>
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sedang Diperiksa</p>
-                  <p className="text-xl font-extrabold text-amber-700">{sedangDiperiksaCount} Klinik</p>
-                </div>
+                <div><p className="text-xs font-bold text-gray-400 uppercase">Sedang Diperiksa</p><p className="text-xl font-extrabold text-amber-700">{sedangDiperiksaCount} Klinik</p></div>
               </div>
-
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-teal-100 flex items-center space-x-4">
                 <div className="w-14 h-14 bg-teal-50 text-teal-700 rounded-2xl flex items-center justify-center font-bold text-xl">{sudahTerverifikasiCount}</div>
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sudah Terverifikasi</p>
-                  <p className="text-xl font-extrabold text-teal-700">{sudahTerverifikasiCount} Klinik</p>
-                </div>
+                <div><p className="text-xs font-bold text-gray-400 uppercase">Sudah Terverifikasi</p><p className="text-xl font-extrabold text-teal-700">{sudahTerverifikasiCount} Klinik</p></div>
               </div>
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">Daftar Dokumen Pemohon Klinik</h2>
-                  <p className="text-xs text-gray-500">Kelola status verifikasi berkas dan berikan catatan perbaikan untuk setiap pemohon.</p>
-                </div>
-              </div>
-
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Daftar Pemohon Klinik & Pemeriksaan 28 Dokumen</h2>
+              
               {users.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                  <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm font-bold text-gray-700">Belum ada pemohon klinik yang terdaftar.</p>
-                </div>
+                <div className="text-center py-12 bg-gray-50 rounded-2xl"><p className="text-sm font-bold text-gray-700">Belum ada pemohon terdaftar.</p></div>
               ) : (
                 <div className="space-y-6">
                   {users.map((u) => (
@@ -533,72 +437,47 @@ export default function App() {
                         <div>
                           <div className="flex items-center space-x-3">
                             <h3 className="font-extrabold text-gray-900 text-base">{u.clinicName}</h3>
-                            <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                              u.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' :
-                              u.status === 'Catatan Perbaikan' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
-                            }`}>
-                              {u.status}
-                            </span>
+                            <span className={`text-xs px-3 py-1 rounded-full font-semibold ${u.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{u.status}</span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            PJ: <span className="font-medium text-gray-800">{u.name}</span> | Email: <span className="font-medium text-gray-800">{u.email}</span> | WA: <span className="font-medium text-gray-800">{u.phone}</span>
-                          </p>
+                          <p className="text-xs text-gray-500 mt-1">PJ: {u.name} | Email: {u.email} | WA: {u.phone}</p>
                         </div>
-                        <button onClick={() => handleDeleteUser(u.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition border border-red-200 flex items-center space-x-1">
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Hapus Pemohon</span>
+                        <button onClick={() => handleDeleteUser(u.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl text-xs font-semibold border border-red-200 flex items-center space-x-1">
+                          <Trash2 className="w-3.5 h-3.5" /><span>Hapus Pemohon</span>
                         </button>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {Object.entries(u.documents).map(([docKey, docVal]) => (
-                          <div key={docKey} className="bg-white rounded-xl p-4 border border-gray-200 flex flex-col justify-between">
-                            <div>
-                              <div className="flex justify-between items-center mb-1.5">
-                                <span className="text-[11px] font-bold text-gray-500 uppercase">
-                                  {docKey === 'suratPermohonan' ? 'Surat Permohonan' :
-                                   docKey === 'profilKlinik' ? 'Profil & Denah' :
-                                   docKey === 'suratIzinPraktik' ? 'SIP & Nakes' : 'Kelayakan Alat'}
-                                </span>
-                                <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
-                                  docVal.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' :
-                                  docVal.status === 'Catatan Perbaikan' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
-                                }`}>
-                                  {docVal.status}
-                                </span>
-                              </div>
-                              <p className="text-xs font-medium text-gray-800 truncate mb-2">{docVal.name}</p>
-                              
-                              <div className="flex items-center space-x-2 mb-3">
-                                <button 
-                                  onClick={() => setPreviewDoc({ title: docKey, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: u.clinicName })}
-                                  className="text-[11px] text-emerald-700 hover:underline font-bold flex items-center space-x-1">
-                                  <Eye className="w-3 h-3" />
-                                  <span>Lihat File PDF</span>
+                      {/* 28 DOKUMEN REVIEW GRID DI ADMIN */}
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2">
+                        {LIST_28_DOKUMEN.map((listItem) => {
+                          const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
+                          return (
+                            <div key={listItem.key} className="bg-white rounded-xl p-3 border border-gray-200 flex flex-col justify-between">
+                              <div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-[10px] font-bold text-gray-500 uppercase truncate" title={listItem.title}>{listItem.title}</span>
+                                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold ${
+                                    docVal.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' :
+                                    docVal.status === 'Catatan Perbaikan' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+                                  }`}>{docVal.status}</span>
+                                </div>
+                                <p className="text-[11px] font-medium text-gray-800 truncate mb-1.5">{docVal.name}</p>
+                                
+                                <button onClick={() => setPreviewDoc({ title: listItem.title, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: u.clinicName })} className="text-[10px] text-emerald-700 font-bold hover:underline flex items-center space-x-1 mb-2">
+                                  <Eye className="w-3 h-3" /><span>Lihat File PDF</span>
                                 </button>
-                              </div>
 
-                              <div className="space-y-2 pt-2 border-t border-gray-100">
-                                <select 
-                                  value={docVal.status}
-                                  onChange={(e) => handleAdminUpdateDocStatus(u.id, docKey, e.target.value, docVal.note)}
-                                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-lg p-1.5">
-                                  <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                                  <option value="Sudah Terverifikasi">Sudah Terverifikasi</option>
-                                  <option value="Catatan Perbaikan">Catatan Perbaikan</option>
-                                </select>
-
-                                <input 
-                                  type="text"
-                                  placeholder="Catatan perbaikan..."
-                                  value={docVal.note}
-                                  onChange={(e) => handleAdminUpdateDocStatus(u.id, docKey, docVal.status, e.target.value)}
-                                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-lg p-1.5"
-                                />
+                                <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                                  <select value={docVal.status} onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, e.target.value, docVal.note)} className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1">
+                                    <option value="Menunggu Verifikasi">Menunggu</option>
+                                    <option value="Sudah Terverifikasi">Terverifikasi</option>
+                                    <option value="Catatan Perbaikan">Perbaikan</option>
+                                  </select>
+                                  <input type="text" placeholder="Catatan..." value={docVal.note} onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, docVal.status, e.target.value)} className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1" />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
@@ -625,19 +504,13 @@ export default function App() {
               </button>
             </div>
 
-            {/* EMBED PDF VIEWER */}
             <div className="my-4 flex-grow bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 flex items-center justify-center">
               {previewDoc.url ? (
-                <iframe 
-                  src={`${previewDoc.url}#toolbar=0`} 
-                  title="PDF Preview"
-                  className="w-full h-full"
-                />
+                <iframe src={`${previewDoc.url}#toolbar=0`} title="PDF Preview" className="w-full h-full" />
               ) : (
                 <div className="text-center p-6 text-gray-500">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm font-bold">File PDF bawaan sistem atau belum diunggah ulang.</p>
-                  <p className="text-xs mt-1">Silakan minta pemohon untuk mengunggah ulang file PDF agar dapat langsung dipratinjau secara live.</p>
+                  <p className="text-sm font-bold">File PDF belum diunggah atau menggunakan file bawaan demo.</p>
                 </div>
               )}
             </div>
@@ -649,10 +522,8 @@ export default function App() {
             )}
 
             <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-              <span className="text-xs text-gray-500">Status Dokumen: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
-              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">
-                Tutup Pratinjau
-              </button>
+              <span className="text-xs text-gray-500">Status: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
+              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">Tutup</button>
             </div>
           </div>
         </div>
@@ -662,10 +533,6 @@ export default function App() {
       <footer className="bg-white border-t border-emerald-100 py-6 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
           <p>© 2026 Dinas Kesehatan Kabupaten Badung. Seluruh hak cipta dilindungi.</p>
-          <div className="flex items-center space-x-6">
-            <span>Bantuan & Panduan</span>
-            <span>Kontak Bidang Yankes</span>
-          </div>
         </div>
       </footer>
 
