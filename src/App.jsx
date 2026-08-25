@@ -246,7 +246,7 @@ export default function App() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
                   Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
                 </p>
@@ -277,6 +277,8 @@ export default function App() {
                   <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
+                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700"></code></p>
                   </div>
                 </form>
               )}
