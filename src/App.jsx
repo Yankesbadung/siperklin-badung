@@ -683,7 +683,7 @@ export default function App() {
                                 {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic}</p>}
                               </div>
                               <button 
-                                onClick={() => setPreviewDoc(null)}
+                                onClick={() => setPreviewDoc(...)}
                                 className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition">
                                 <X className="w-5 h-5" />
                               </button>
