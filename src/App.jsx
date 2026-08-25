@@ -278,7 +278,7 @@ export default function App() {
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
-                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700"></code></p>
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> <code className="bg-white px-1 font-bold text-emerald-700"></code></p>
                   </div>
                 </form>
               )}
