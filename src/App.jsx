@@ -7,12 +7,12 @@ import {
 
 // Daftar 28 Dokumen Persyaratan Perizinan Klinik (SIPERKLIN)
 const LIST_28_DOKUMEN = [
-  { key: 'dok_1', title: '1. Surat Permohonan Rekomendasi', desc: 'Surat permohonan resmi bermaterai' },
+  { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
   { key: 'dok_2', title: '2. Profil Lengkap Klinik', desc: 'Visi, misi, struktur organisasi, & layanan' },
   { key: 'dok_3', title: '3. Akta Pendirian Badan Hukum/Usaha', desc: 'Akta notaris pendirian yayasan/PT/CV' },
   { key: 'dok_4', title: '4. Pengesahan Badan Hukum dari Kemenkumham', desc: 'Surat keputusan pengesahan resmi' },
   { key: 'dok_5', title: '5. Bukti Kepemilikan / Penguasaan Tanah & Gedung', desc: 'Sertifikat tanah / Akta sewa bangunan minimal 5 tahun' },
-  { key: 'dok_6', title: '6. Selfasesment', desc: 'Persetujuan Bangunan Gedung sesuai peruntukan' },
+  { key: 'dok_6', title: '6. Izin Mendirikan Bangunan (IMB) / PBG', desc: 'Persetujuan Bangunan Gedung sesuai peruntukan' },
   { key: 'dok_7', title: '7. Surat Layanan / Kelaikan Fungsi Gedung (SLF)', desc: 'Sertifikat kelaikan fungsi bangunan' },
   { key: 'dok_8', title: '8. Surat Izin Praktik (SIP) Dokter Penanggung Jawab', desc: 'SIP dokter penanggung jawab klinik' },
   { key: 'dok_9', title: '9. Daftar Seluruh Tenaga Medis & Paramedis', desc: 'Daftar nama lengkap beserta kualifikasi' },
@@ -246,7 +246,7 @@ export default function App() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
                   Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
                 </p>
@@ -277,6 +277,8 @@ export default function App() {
                   <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
+                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700">Pelayanankesehatan1</code></p>
                   </div>
                 </form>
               )}
