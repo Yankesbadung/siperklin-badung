@@ -41,26 +41,10 @@ export default function App() {
         status: 'Sedang Diperiksa',
         submissionDate: '2026-08-20',
         documents: {
-          suratPermohonan: { name: 'Surat_Permohonan_SehatMandiri.pdf', status: 'Sudah Terverifikasi', note: 'Dokumen lengkap sesuai ketentuan.' },
-          profilKlinik: { name: 'Profil_Klinik_Pratama.pdf', status: 'Catatan Perbaikan', note: 'Mohon lampirkan denah ruangan secara lebih detail.' },
-          suratIzinPraktik: { name: 'SIP_Dokter_PenanggungJawab.pdf', status: 'Sudah Terverifikasi', note: '' },
-          suratKelayakan: { name: 'Sertifikat_Kelayakan_Alat.pdf', status: 'Menunggu Verifikasi', note: '' }
-        }
-      },
-      {
-        id: 'u2',
-        name: 'Dr. Ni Luh Putu Ari',
-        email: 'ari@klinikbali.com',
-        phone: '081987654321',
-        password: 'password123',
-        clinicName: 'Klinik Utama Bali Medika',
-        status: 'Sudah Terverifikasi',
-        submissionDate: '2026-08-18',
-        documents: {
-          suratPermohonan: { name: 'Surat_Permohonan_BaliMedika.pdf', status: 'Sudah Terverifikasi', note: 'Sangat baik.' },
-          profilKlinik: { name: 'Profil_Lengkap_Klinik.pdf', status: 'Sudah Terverifikasi', note: '' },
-          suratIzinPraktik: { name: 'Daftar_SDM_Klinik.pdf', status: 'Sudah Terverifikasi', note: '' },
-          suratKelayakan: { name: 'Kelayakan_Gedung_Medika.pdf', status: 'Sudah Terverifikasi', note: '' }
+          suratPermohonan: { name: 'Surat_Permohonan_SehatMandiri.pdf', url: '', status: 'Sudah Terverifikasi', note: 'Dokumen lengkap sesuai ketentuan.' },
+          profilKlinik: { name: 'Profil_Klinik_Pratama.pdf', url: '', status: 'Catatan Perbaikan', note: 'Mohon lampirkan denah ruangan secara lebih detail.' },
+          suratIzinPraktik: { name: 'SIP_Dokter_PenanggungJawab.pdf', url: '', status: 'Sudah Terverifikasi', note: '' },
+          suratKelayakan: { name: 'Sertifikat_Kelayakan_Alat.pdf', url: '', status: 'Menunggu Verifikasi', note: '' }
         }
       }
     ];
@@ -73,9 +57,6 @@ export default function App() {
 
   // Preview Modal State
   const [previewDoc, setPreviewDoc] = useState(null);
-
-  // Admin Active Tab / Filter
-  const [adminTab, setAdminTab] = useState('pengajuan'); // 'pengajuan'
 
   // Handle Login Submission
   const handleLogin = (e) => {
@@ -113,7 +94,6 @@ export default function App() {
       return;
     }
 
-    // Check if email exists
     if (users.some(u => u.email === regEmail)) {
       alert('Email sudah terdaftar. Silakan gunakan email lain atau masuk.');
       return;
@@ -129,10 +109,10 @@ export default function App() {
       status: 'Menunggu Verifikasi',
       submissionDate: new Date().toISOString().split('T')[0],
       documents: {
-        suratPermohonan: { name: 'Surat_Permohonan_Resmi.pdf', status: 'Menunggu Verifikasi', note: '' },
-        profilKlinik: { name: 'Profil_Klinik.pdf', status: 'Menunggu Verifikasi', note: '' },
-        suratIzinPraktik: { name: 'Daftar_Tenaga_Medis.pdf', status: 'Menunggu Verifikasi', note: '' },
-        suratKelayakan: { name: 'Surat_Kelayakan_Lokasi.pdf', status: 'Menunggu Verifikasi', note: '' }
+        suratPermohonan: { name: 'Surat_Permohonan_Resmi.pdf', url: '', status: 'Menunggu Verifikasi', note: '' },
+        profilKlinik: { name: 'Profil_Klinik.pdf', url: '', status: 'Menunggu Verifikasi', note: '' },
+        suratIzinPraktik: { name: 'Daftar_Tenaga_Medis.pdf', url: '', status: 'Menunggu Verifikasi', note: '' },
+        suratKelayakan: { name: 'Surat_Kelayakan_Lokasi.pdf', url: '', status: 'Menunggu Verifikasi', note: '' }
       }
     };
 
@@ -149,13 +129,14 @@ export default function App() {
     }, 2000);
   };
 
-  // Handle User Document Upload Simulation
-  const handleUploadDoc = (docKey, fileName) => {
+  // Handle User Document Upload with Real Object URL for Preview
+  const handleUploadDoc = (docKey, file) => {
+    const fileUrl = URL.createObjectURL(file);
     const updatedUsers = users.map(u => {
       if (u.id === currentUser.id) {
         const updatedDocs = {
           ...u.documents,
-          [docKey]: { name: fileName, status: 'Menunggu Verifikasi', note: '' }
+          [docKey]: { name: file.name, url: fileUrl, status: 'Menunggu Verifikasi', note: '' }
         };
         const updatedUser = { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
         return updatedUser;
@@ -165,7 +146,7 @@ export default function App() {
     setUsers(updatedUsers);
     const updatedCurrent = updatedUsers.find(u => u.id === currentUser.id);
     setCurrentUser(updatedCurrent);
-    alert('Dokumen berhasil diunggah dan dikirim ke Admin!');
+    alert('Dokumen PDF berhasil diunggah dan dikirim ke Admin!');
   };
 
   // Admin: Update Document Status
@@ -177,7 +158,6 @@ export default function App() {
           [docKey]: { ...u.documents[docKey], status: newStatus, note: newNote }
         };
         
-        // Re-evaluate overall clinic status
         const statuses = Object.values(updatedDocs).map(d => d.status);
         let overallStatus = 'Sedang Diperiksa';
         if (statuses.every(s => s === 'Sudah Terverifikasi')) {
@@ -201,7 +181,6 @@ export default function App() {
     }
   };
 
-  // Statistics for Admin
   const totalPengajuan = users.length;
   const sedangDiperiksaCount = users.filter(u => u.status === 'Sedang Diperiksa' || u.status === 'Menunggu Verifikasi' || u.status === 'Catatan Perbaikan').length;
   const sudahTerverifikasiCount = users.filter(u => u.status === 'Sudah Terverifikasi').length;
@@ -251,13 +230,10 @@ export default function App() {
       {/* MAIN CONTENT AREA */}
       <main className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
         
-        {/* VIEW 1 & 2: LOGIN / REGISTER */}
+        {/* LOGIN / REGISTER VIEW */}
         {currentView === 'login' && (
           <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-emerald-100">
-            
-            {/* Left Brand Panel */}
             <div className="lg:col-span-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 p-8 sm:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-600 opacity-20 rounded-full blur-3xl pointer-events-none"></div>
               <div>
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
@@ -272,10 +248,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right Form Panel */}
             <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center">
-              
-              {/* Tabs */}
               <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-8 max-w-sm">
                 <button 
                   onClick={() => { setAuthTab('login'); setRegSuccess(''); }}
@@ -291,7 +264,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* LOGIN FORM */}
               {authTab === 'login' && (
                 <form onSubmit={handleLogin} className="space-y-5">
                   <div>
@@ -324,10 +296,7 @@ export default function App() {
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Password</label>
-                      <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Silakan hubungi administrator Dinkes Badung untuk reset password.'); }} className="text-xs text-emerald-600 hover:underline font-medium">Lupa Password?</a>
-                    </div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Password</label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                         <Lock className="w-4 h-4" />
@@ -343,9 +312,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <button 
-                    type="submit"
-                    className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
                     <span>Masuk Sekarang</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -353,12 +320,11 @@ export default function App() {
                   <div className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
                     <p className="font-bold mb-1">💡 Informasi Login:</p>
                     <p>• <strong>Admin:</strong> username <code className="bg-white px-1 py-0.5 rounded font-bold text-emerald-700">yankesbadung</code> | password <code className="bg-white px-1 py-0.5 rounded font-bold text-emerald-700">Pelayanankesehatan1</code></p>
-                    <p className="mt-1">• <strong>User Pemohon:</strong> Wajib mendaftar terlebih dahulu menggunakan tab "Pendaftaran Baru" di atas.</p>
+                    <p className="mt-1">• <strong>User Pemohon:</strong> Wajib mendaftar terlebih dahulu pada tab "Pendaftaran Baru".</p>
                   </div>
                 </form>
               )}
 
-              {/* REGISTER FORM */}
               {authTab === 'register' && (
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div>
@@ -375,135 +341,67 @@ export default function App() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pemohon / Penanggung Jawab</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={regName}
-                        onChange={(e) => setRegName(e.target.value)}
-                        placeholder="Dr. Nama Lengkap & Gelar"
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                      />
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pemohon</label>
+                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Dr. Nama Lengkap & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Klinik</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={regClinicName}
-                        onChange={(e) => setRegClinicName(e.target.value)}
-                        placeholder="Klinik Pratama / Utama ..."
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                      />
+                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama / Utama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Email Aktif</label>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                          <Mail className="w-3.5 h-3.5" />
-                        </span>
-                        <input 
-                          type="email" 
-                          required
-                          value={regEmail}
-                          onChange={(e) => setRegEmail(e.target.value)}
-                          placeholder="email@klinik.com"
-                          className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                        />
-                      </div>
+                      <input type="email" required value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="email@klinik.com" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nomor Telp / WhatsApp</label>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                          <Phone className="w-3.5 h-3.5" />
-                        </span>
-                        <input 
-                          type="text" 
-                          required
-                          value={regPhone}
-                          onChange={(e) => setRegPhone(e.target.value)}
-                          placeholder="081234567890"
-                          className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                        />
-                      </div>
+                      <input type="text" required value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="081234567890" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Password Akun</label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <Lock className="w-3.5 h-3.5" />
-                      </span>
-                      <input 
-                        type="password" 
-                        required
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Minimal 6 karakter"
-                        className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                      />
-                    </div>
+                    <input type="password" required value={regPassword} onChange={(e) => setRegPassword(e.target.value)} placeholder="Minimal 6 karakter" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
 
-                  <button 
-                    type="submit"
-                    className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 mt-2">
+                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 mt-2">
                     <span>Daftar Sekarang</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>
               )}
-
             </div>
           </div>
         )}
 
-        {/* VIEW 3: USER DASHBOARD */}
+        {/* USER DASHBOARD VIEW */}
         {currentView === 'user-dashboard' && currentUser && currentUser.role !== 'admin' && (
           <div className="w-full max-w-6xl space-y-6">
-            
-            {/* Welcome Banner */}
             <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <span className="bg-emerald-700 text-emerald-100 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-600">Dashboard Pemohon</span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">{currentUser.clinicName}</h1>
                 <p className="text-emerald-100 text-sm mt-1">Penanggung Jawab: {currentUser.name} | WhatsApp: {currentUser.phone}</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20 flex items-center space-x-3">
-                <div>
-                  <p className="text-xs text-emerald-200 font-medium">Status Pengajuan</p>
-                  <p className="text-sm font-bold flex items-center space-x-1.5 mt-0.5">
-                    {currentUser.status === 'Sudah Terverifikasi' && <CheckCircle2 className="w-4 h-4 text-emerald-300" />}
-                    {currentUser.status === 'Sedang Diperiksa' && <Clock className="w-4 h-4 text-amber-300" />}
-                    {currentUser.status === 'Catatan Perbaikan' && <AlertCircle className="w-4 h-4 text-red-300" />}
-                    <span>{currentUser.status}</span>
-                  </p>
-                </div>
+              <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20">
+                <p className="text-xs text-emerald-200 font-medium">Status Pengajuan</p>
+                <p className="text-sm font-bold flex items-center space-x-1.5 mt-0.5">
+                  {currentUser.status === 'Sudah Terverifikasi' && <CheckCircle2 className="w-4 h-4 text-emerald-300" />}
+                  {currentUser.status === 'Sedang Diperiksa' && <Clock className="w-4 h-4 text-amber-300" />}
+                  {currentUser.status === 'Catatan Perbaikan' && <AlertCircle className="w-4 h-4 text-red-300" />}
+                  <span>{currentUser.status}</span>
+                </p>
               </div>
             </div>
 
-            {/* Document Upload Grid */}
             <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8">
-              <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div className="mb-6 flex justify-between items-center">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Unggah Berkas Persyaratan Rekomendasi Klinik</h2>
-                  <p className="text-xs text-gray-500">Unggah file berformat PDF (Maks 10MB) untuk diverifikasi oleh Tim Dinas Kesehatan Badung.</p>
+                  <p className="text-xs text-gray-500">Unggah file berformat PDF untuk diverifikasi oleh Tim Dinas Kesehatan Badung.</p>
                 </div>
-                <button 
-                  onClick={() => {
-                    const fresh = users.find(u => u.id === currentUser.id);
-                    setCurrentUser(fresh);
-                    alert('Data diperbarui!');
-                  }}
-                  className="flex items-center space-x-1.5 text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-2 rounded-xl font-semibold transition border border-emerald-200">
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Perbarui Status</span>
-                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -513,9 +411,9 @@ export default function App() {
                   { key: 'suratIzinPraktik', title: '3. SIP & Daftar Tenaga Medis', desc: 'Surat Izin Praktik dokter & nakes terkait' },
                   { key: 'suratKelayakan', title: '4. Sertifikat Kelayakan Alat & Gedung', desc: 'Hasil uji kelayakan alat kesehatan & bangunan' },
                 ].map((item) => {
-                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', status: 'Belum Ada', note: '' };
+                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Belum Ada', note: '' };
                   return (
-                    <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between hover:border-emerald-300 transition">
+                    <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
@@ -537,7 +435,7 @@ export default function App() {
                           </div>
                           {docInfo.name !== 'Belum diunggah' && (
                             <button 
-                              onClick={() => setPreviewDoc({ title: item.title, name: docInfo.name, status: docInfo.status, note: docInfo.note })}
+                              onClick={() => setPreviewDoc({ title: item.title, name: docInfo.name, url: docInfo.url, status: docInfo.status, note: docInfo.note })}
                               className="text-xs text-emerald-700 hover:underline font-bold flex items-center space-x-1 flex-shrink-0 ml-2">
                               <Eye className="w-3.5 h-3.5" />
                               <span>Lihat</span>
@@ -555,35 +453,32 @@ export default function App() {
                       <div className="pt-3 border-t border-gray-200 flex items-center justify-between">
                         <label className="cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-2 px-4 rounded-xl transition shadow-sm flex items-center space-x-1.5">
                           <Upload className="w-3.5 h-3.5" />
-                          <span>{docInfo.name === 'Belum diunggah' ? 'Unggah Berkas' : 'Ganti Berkas'}</span>
+                          <span>{docInfo.name === 'Belum diunggah' ? 'Unggah PDF' : 'Ganti PDF'}</span>
                           <input 
                             type="file" 
-                            accept=".pdf"
+                            accept="application/pdf"
                             className="hidden"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
-                                handleUploadDoc(item.key, e.target.files[0].name);
+                                handleUploadDoc(item.key, e.target.files[0]);
                               }
                             }}
                           />
                         </label>
-                        <span className="text-[11px] text-gray-400">Format PDF (Max 10MB)</span>
+                        <span className="text-[11px] text-gray-400">Format PDF</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
             </div>
-
           </div>
         )}
 
-        {/* VIEW 4: ADMIN DASHBOARD */}
+        {/* ADMIN DASHBOARD VIEW */}
         {currentView === 'admin-dashboard' && currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
-            
-            {/* Admin Header Banner */}
-            <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex justify-between items-center">
               <div>
                 <span className="bg-emerald-800 text-emerald-200 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-700">Panel Administrator</span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Manajemen & Verifikasi Pengajuan Klinik</h1>
@@ -591,59 +486,44 @@ export default function App() {
               </div>
             </div>
 
-            {/* Statistics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 flex items-center space-x-4">
-                <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center font-bold text-xl">
-                  {totalPengajuan}
-                </div>
+                <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center font-bold text-xl">{totalPengajuan}</div>
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Jumlah Pengajuan</p>
                   <p className="text-xl font-extrabold text-gray-900">{totalPengajuan} Klinik</p>
-                  <p className="text-[11px] text-gray-500">{currentDateFormatted}</p>
                 </div>
               </div>
 
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-amber-100 flex items-center space-x-4">
-                <div className="w-14 h-14 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center font-bold text-xl">
-                  {sedangDiperiksaCount}
-                </div>
+                <div className="w-14 h-14 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center font-bold text-xl">{sedangDiperiksaCount}</div>
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sedang Diperiksa</p>
                   <p className="text-xl font-extrabold text-amber-700">{sedangDiperiksaCount} Klinik</p>
-                  <p className="text-[11px] text-gray-500">Perlu Verifikasi / Perbaikan</p>
                 </div>
               </div>
 
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-teal-100 flex items-center space-x-4">
-                <div className="w-14 h-14 bg-teal-50 text-teal-700 rounded-2xl flex items-center justify-center font-bold text-xl">
-                  {sudahTerverifikasiCount}
-                </div>
+                <div className="w-14 h-14 bg-teal-50 text-teal-700 rounded-2xl flex items-center justify-center font-bold text-xl">{sudahTerverifikasiCount}</div>
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sudah Terverifikasi</p>
                   <p className="text-xl font-extrabold text-teal-700">{sudahTerverifikasiCount} Klinik</p>
-                  <p className="text-[11px] text-gray-500">Rekomendasi Siap Terbit</p>
                 </div>
               </div>
             </div>
 
-            {/* Applicants List & Review Table */}
             <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8">
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Daftar Dokumen Pemohon Klinik</h2>
                   <p className="text-xs text-gray-500">Kelola status verifikasi berkas dan berikan catatan perbaikan untuk setiap pemohon.</p>
                 </div>
-                <span className="text-xs font-semibold bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200">
-                  Total: {users.length} Pemohon
-                </span>
               </div>
 
               {users.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                   <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-sm font-bold text-gray-700">Belum ada pemohon klinik yang terdaftar.</p>
-                  <p className="text-xs text-gray-500 mt-1">Pemohon dapat melakukan pendaftaran baru melalui halaman utama.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -661,90 +541,48 @@ export default function App() {
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
-                            Penanggung Jawab: <span className="font-medium text-gray-800">{u.name}</span> | Email: <span className="font-medium text-gray-800">{u.email}</span> | WA: <span className="font-medium text-gray-800">{u.phone}</span> | Tanggal Pengajuan: <span className="font-medium text-gray-800">{u.submissionDate}</span>
+                            PJ: <span className="font-medium text-gray-800">{u.name}</span> | Email: <span className="font-medium text-gray-800">{u.email}</span> | WA: <span className="font-medium text-gray-800">{u.phone}</span>
                           </p>
                         </div>
-                        <button 
-                          onClick={() => handleDeleteUser(u.id)}
-                          className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition border border-red-200 flex items-center space-x-1">
+                        <button onClick={() => handleDeleteUser(u.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition border border-red-200 flex items-center space-x-1">
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Hapus Pemohon</span>
                         </button>
                       </div>
 
-                      {/* DOCUMENT PREVIEW MODAL */}
-                      {previewDoc && (...))
-                        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-emerald-100 animate-in fade-in zoom-in duration-200">
-                            <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
-                              <div>
-                                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Pratinjau Dokumen Persyaratan</span>
-                                <h3 className="text-lg font-extrabold text-gray-900 mt-1">{previewDoc.title}</h3>
-                                {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic}</p>}
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {Object.entries(u.documents).map(([docKey, docVal]) => (
+                          <div key={docKey} className="bg-white rounded-xl p-4 border border-gray-200 flex flex-col justify-between">
+                            <div>
+                              <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[11px] font-bold text-gray-500 uppercase">
+                                  {docKey === 'suratPermohonan' ? 'Surat Permohonan' :
+                                   docKey === 'profilKlinik' ? 'Profil & Denah' :
+                                   docKey === 'suratIzinPraktik' ? 'SIP & Nakes' : 'Kelayakan Alat'}
+                                </span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
+                                  docVal.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' :
+                                  docVal.status === 'Catatan Perbaikan' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+                                }`}>
+                                  {docVal.status}
+                                </span>
                               </div>
-                              <button 
-                                onClick={() => setPreviewDoc(...)}
-                                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition">
-                                <X className="w-5 h-5" />
-                              </button>
-                            </div>
-                
-                            <div className="space-y-4">
-                              <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-10 h-10 bg-emerald-700 text-white rounded-xl flex items-center justify-center">
-                                    <FileText className="w-5 h-5" />
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-bold text-gray-900">{previewDoc.name}</p>
-                                    <p className="text-xs text-emerald-700 font-medium">Status: {previewDoc.status}</p>
-                                  </div>
-                                </div>
-                                <a 
-                                  href={`#download-${previewDoc.name}`}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    // Membuat simulasi unduh atau membuka file PDF
-                                    alert(`Membuka dokumen PDF: ${previewDoc.name}`);
-                                  }}
-                                  className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-sm">
-                                  <Download className="w-4 h-4" />
-                                  <span>Buka / Unduh PDF</span>
-                                </a>
+                              <p className="text-xs font-medium text-gray-800 truncate mb-2">{docVal.name}</p>
+                              
+                              <div className="flex items-center space-x-2 mb-3">
+                                <button 
+                                  onClick={() => setPreviewDoc({ title: docKey, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: u.clinicName })}
+                                  className="text-[11px] text-emerald-700 hover:underline font-bold flex items-center space-x-1">
+                                  <Eye className="w-3 h-3" />
+                                  <span>Lihat File PDF</span>
+                                </button>
                               </div>
-                
-                              {/* Kotak Informasi & Simulasi Tampilan Dokumen Asli */}
-                              <div className="bg-emerald-900/10 border border-emerald-200 rounded-2xl p-6 text-center flex flex-col items-center justify-center space-y-3">
-                                <FileCheck className="w-12 h-12 text-emerald-700" />
-                                <p className="text-sm font-bold text-gray-900">Berkas PDF: {previewDoc.name}</p>
-                                <p className="text-xs text-gray-600 max-w-md">
-                                  File dokumen persyaratan ini dikirim langsung oleh pemohon klinik dan siap untuk divalidasi keasliannya oleh tim verifikator Dinas Kesehatan.
-                                </p>
-                              </div>
-                
-                              {previewDoc.note && (
-                                <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800">
-                                  <span className="font-bold">Catatan Perbaikan:</span> {previewDoc.note}
-                                </div>
-                              )}
-                            </div>
-                
-                            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
-                              <button 
-                                onClick={() => setPreviewDoc(null)}
-                                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">
-                                Tutup Pratinjau
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                              {/* Status changer & Note input */}
+
                               <div className="space-y-2 pt-2 border-t border-gray-100">
                                 <select 
                                   value={docVal.status}
                                   onChange={(e) => handleAdminUpdateDocStatus(u.id, docKey, e.target.value, docVal.note)}
-                                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-lg p-1.5">
                                   <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
                                   <option value="Sudah Terverifikasi">Sudah Terverifikasi</option>
                                   <option value="Catatan Perbaikan">Catatan Perbaikan</option>
@@ -755,7 +593,7 @@ export default function App() {
                                   placeholder="Catatan perbaikan..."
                                   value={docVal.note}
                                   onChange={(e) => handleAdminUpdateDocStatus(u.id, docKey, docVal.status, e.target.value)}
-                                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-lg p-1.5"
                                 />
                               </div>
                             </div>
@@ -767,69 +605,52 @@ export default function App() {
                 </div>
               )}
             </div>
-
           </div>
         )}
 
       </main>
 
-      {/* DOCUMENT PREVIEW MODAL */}
+      {/* PDF VIEWER MODAL */}
       {previewDoc && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-emerald-100 animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-4xl w-full h-[85vh] p-6 shadow-2xl border border-emerald-100 flex flex-col justify-between">
+            <div className="flex justify-between items-center pb-4 border-b border-gray-100">
               <div>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Pratinjau Dokumen Persyaratan</span>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Pratinjau PDF Langsung</span>
                 <h3 className="text-lg font-extrabold text-gray-900 mt-1">{previewDoc.title}</h3>
-                {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic}</p>}
+                {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic} — File: {previewDoc.name}</p>}
               </div>
-              <button 
-                onClick={() => setPreviewDoc(null)}
-                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition">
+              <button onClick={() => setPreviewDoc(null)} className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-emerald-700 text-white rounded-xl flex items-center justify-center">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">{previewDoc.name}</p>
-                    <p className="text-xs text-emerald-700 font-medium">Status: {previewDoc.status}</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => alert(`Mengunduh file: ${previewDoc.name}`)}
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-sm">
-                  <Download className="w-4 h-4" />
-                  <span>Unduh PDF</span>
-                </button>
-              </div>
-
-              {/* Simulated PDF Viewer Box */}
-              <div className="bg-gray-900 rounded-2xl p-6 text-white text-center h-64 flex flex-col items-center justify-center space-y-3 relative overflow-hidden shadow-inner">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                <FileCheck className="w-12 h-12 text-emerald-400" />
-                <p className="text-sm font-semibold tracking-wide">Pratinjau Berkas Dokumen Resmi Klinik</p>
-                <p className="text-xs text-gray-400 max-w-md">
-                  Dokumen ini telah diunggah oleh pemohon dan terenkripsi aman dalam sistem penyimpanan SIPERKLIN Badung.
-                </p>
-              </div>
-
-              {previewDoc.note && (
-                <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800">
-                  <span className="font-bold">Catatan Perbaikan:</span> {previewDoc.note}
+            {/* EMBED PDF VIEWER */}
+            <div className="my-4 flex-grow bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 flex items-center justify-center">
+              {previewDoc.url ? (
+                <iframe 
+                  src={`${previewDoc.url}#toolbar=0`} 
+                  title="PDF Preview"
+                  className="w-full h-full"
+                />
+              ) : (
+                <div className="text-center p-6 text-gray-500">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm font-bold">File PDF bawaan sistem atau belum diunggah ulang.</p>
+                  <p className="text-xs mt-1">Silakan minta pemohon untuk mengunggah ulang file PDF agar dapat langsung dipratinjau secara live.</p>
                 </div>
               )}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
-              <button 
-                onClick={() => setPreviewDoc(null)}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">
+            {previewDoc.note && (
+              <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800 mb-2">
+                <span className="font-bold">Catatan Perbaikan:</span> {previewDoc.note}
+              </div>
+            )}
+
+            <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+              <span className="text-xs text-gray-500">Status Dokumen: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
+              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">
                 Tutup Pratinjau
               </button>
             </div>
@@ -842,8 +663,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
           <p>© 2026 Dinas Kesehatan Kabupaten Badung. Seluruh hak cipta dilindungi.</p>
           <div className="flex items-center space-x-6">
-            <span className="hover:text-emerald-700 transition cursor-pointer" onClick={() => alert('Sistem Informasi Pendaftaran Rekomendasi Klinik Terpadu v2.1')}>Bantuan & Panduan</span>
-            <span className="hover:text-emerald-700 transition cursor-pointer" onClick={() => alert('Kontak: yankes.badungkab@gov.id')}>Kontak Bidang Yankes</span>
+            <span>Bantuan & Panduan</span>
+            <span>Kontak Bidang Yankes</span>
           </div>
         </div>
       </footer>
