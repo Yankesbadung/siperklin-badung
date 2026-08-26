@@ -7,6 +7,8 @@ import {
 import { createClient } from '@supabase/supabase-js';
 
 // Inisialisasi koneksi Supabase menggunakan Environment Variables Vercel
+import { createClient } from '@supabase/supabase-js';
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
@@ -93,8 +95,15 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('siperklin_users_28', JSON.stringify(users));
-  }, [users]);
+  async function fetchUsers() {
+    if (!supabase) return;
+    const { data, error } = await supabase.from('profiles').select('*');
+    if (data && data.length > 0) {
+      setUsers(data);
+    }
+  }
+  fetchUsers();
+}, []);
 
   const [previewDoc, setPreviewDoc] = useState(null);
 
