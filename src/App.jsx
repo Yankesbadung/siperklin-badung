@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Building2, FileText, CheckCircle2, Clock, AlertCircle, 
-  User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw 
-} from 'lucide-react';
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Daftar 28 Dokumen Persyaratan Perizinan Klinik (SIPERKLIN)
 const LIST_28_DOKUMEN = [
