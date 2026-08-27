@@ -189,39 +189,57 @@ export default function App() {
     setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
   };
 
-  // Fungsi Unggah Dokumen yang sudah diperbarui agar tersinkronisasi ke database
+  // REFACTORED: Mengonversi file PDF menjadi Base64 agar dapat disimpan di database dan dilihat di perangkat lain
   const handleUploadDoc = async (docKey, file) => {
-    const fileName = file.name;
-    const fileUrl = URL.createObjectURL(file);
-    
-    const updatedDocs = {
-      ...currentUser.documents,
-      [docKey]: { name: fileName, url: fileUrl, status: 'Menunggu Verifikasi', note: '' }
-    };
-
-    const updatedUsers = users.map(u => {
-      if (u.id === currentUser.id) {
-        return { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
-      }
-      return u;
-    });
-
-    setUsers(updatedUsers);
-    setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
-
-    if (supabase) {
-      const { error } = await supabase.from('SIPERKLIN').update({
-        documents: updatedDocs,
-        status: 'Sedang Diperiksa'
-      }).eq('id', currentUser.id);
-
-      if (error) {
-        alert('Gagal menyinkronkan dokumen ke database cloud: ' + error.message);
-        return;
-      }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran file terlalu besar! Maksimal 5MB agar dapat tersimpan sempurna di database.');
+      return;
     }
 
-    alert('Dokumen PDF berhasil diunggah dan disimpan ke database!');
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+      const base64Url = reader.result;
+
+      const updatedDocs = {
+        ...currentUser.documents,
+        [docKey]: { 
+          name: file.name, 
+          url: base64Url, 
+          status: 'Menunggu Verifikasi', 
+          note: '' 
+        }
+      };
+
+      const updatedUsers = users.map(u => {
+        if (u.id === currentUser.id) {
+          return { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
+        }
+        return u;
+      });
+
+      setUsers(updatedUsers);
+      setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
+
+      if (supabase) {
+        const { error } = await supabase.from('SIPERKLIN').update({
+          documents: updatedDocs,
+          status: 'Sedang Diperiksa'
+        }).eq('id', currentUser.id);
+
+        if (error) {
+          alert('Gagal menyinkronkan dokumen ke database cloud: ' + error.message);
+          return;
+        }
+      }
+
+      alert('Dokumen PDF berhasil diunggah dan dibagikan secara online!');
+    };
+
+    reader.onerror = (error) => {
+      console.error('Error membaca file:', error);
+      alert('Gagal membaca file PDF.');
+    };
   };
 
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
@@ -454,7 +472,7 @@ export default function App() {
                           <span>{docInfo.name === 'Belum diunggah' ? 'Unggah PDF' : 'Ganti PDF'}</span>
                           <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadDoc(item.key, e.target.files[0]); }} />
                         </label>
-                        <span className="text-[10px] text-gray-400">PDF max 10MB</span>
+                        <span className="text-[10px] text-gray-400">PDF max 5MB</span>
                       </div>
                     </div>
                   );
