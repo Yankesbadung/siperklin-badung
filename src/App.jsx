@@ -396,7 +396,7 @@ export default function App() {
                   {loginError && <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl flex items-center space-x-2"><AlertCircle className="w-4 h-4 flex-shrink-0" /><span>{loginError}</span></div>}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Username / Email / No. Telp</label>
-                    <input type="text" required value={loginInput} onChange={(e) => setLoginInput(e.target.value)} placeholder="yankesbadung / 081234567890" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    <input type="text" required value={loginInput} onChange={(e) => setLoginInput(e.target.value)} placeholder="kliniksatya@gmail.com / 081234567890" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Password</label>
@@ -406,7 +406,7 @@ export default function App() {
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
-                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700">Pelayanankesehatan1</code></p>
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">Yankes Badung</code> | <code className="bg-white px-1 font-bold text-emerald-700"></code></p>
                   </div>
                 </form>
               )}
