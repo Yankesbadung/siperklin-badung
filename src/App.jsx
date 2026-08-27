@@ -74,40 +74,50 @@ export default function App() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    async function fetchProfiles() {
-      if (!supabase) return;
-      const { data, error } = await supabase.from('SIPERKLIN').select('*');
-      if (data && data.length > 0) {
-        const formatted = data.map(item => ({
-          id: item.id,
-          name: item.name,
-          email: item.email,
-          phone: item.phone,
-          clinicName: item.clinic_name,
-          password: item.password,
-          status: item.status,
-          documents: item.documents
-        }));
-        setUsers(formatted);
-      } else {
-        setUsers([
-          {
-            id: 'u1',
-            name: 'Dr. Made Surya, M.Kes',
-            email: 'surya@kliniksehat.com',
-            phone: '081234567890',
-            password: 'password123',
-            clinicName: 'Klinik Pratama Sehat Mandiri',
-            status: 'Sedang Diperiksa',
-            submissionDate: '2026-08-20',
-            documents: generateInitialDocuments()
-          }
-        ]);
-      }
-    }
-    fetchProfiles();
-  }, []);
+  async function fetchProfiles() {
+    const demo = {
+      id: 'u1',
+      name: 'Dr. Made Surya, M.Kes',
+      email: 'surya@kliniksehat.com',
+      phone: '081234567890',
+      password: 'password123',
+      clinicName: 'Klinik Pratama Sehat Mandiri',
+      status: 'Sedang Diperiksa',
+      submissionDate: '2026-08-20',
+      documents: generateInitialDocuments()
+    };
 
+    if (!supabase) {
+      // Supabase tidak dikonfigurasi: gunakan demo lokal
+      setUsers([demo]);
+      return;
+    }
+
+    const { data, error } = await supabase.from('SIPERKLIN').select('*');
+    if (error) {
+      console.error('Supabase fetch error:', error);
+      setUsers([demo]);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      const formatted = data.map(item => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        phone: item.phone,
+        clinicName: item.clinic_name,
+        password: item.password,
+        status: item.status,
+        documents: item.documents || generateInitialDocuments()
+      }));
+      setUsers(formatted);
+    } else {
+      setUsers([demo]);
+    }
+  }
+  fetchProfiles();
+}, []);
   const [previewDoc, setPreviewDoc] = useState(null);
 
   const handleLogin = (e) => {
