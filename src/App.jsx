@@ -82,40 +82,52 @@ export default function App() {
   const [regSuccess, setRegSuccess] = useState('');
 
   const [users, setUsers] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    async function fetchProfiles() {
-      if (!supabase) return;
-      try {
-        const { data, error } = await supabase.from('SIPERKLIN').select('*');
-        if (data && data.length > 0) {
-          const formatted = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            email: item.email,
-            phone: item.phone,
-            clinicName: item.clinic_name,
-            clinicType: item.clinic_type || 'Klinik Pratama',
-            password: item.password,
-            status: item.status,
-            documents: item.documents || generateInitialDocuments(),
-            visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '' }
-          }));
-          setUsers(formatted);
+  // Fungsi untuk menarik data dari Supabase
+  const fetchProfiles = async (isBackground = false) => {
+    if (!supabase) return;
+    if (!isBackground) setIsRefreshing(true);
+    try {
+      const { data, error } = await supabase.from('SIPERKLIN').select('*');
+      if (data) {
+        const formatted = data.map(item => ({
+          id: item.id,
+          name: item.name,
+          email: item.email,
+          phone: item.phone,
+          clinicName: item.clinic_name,
+          clinicType: item.clinic_type || 'Klinik Pratama',
+          password: item.password,
+          status: item.status || 'Menunggu Verifikasi',
+          documents: item.documents || generateInitialDocuments(),
+          visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '' }
+        }));
+        setUsers(formatted);
 
-          if (currentUser && currentUser.role !== 'admin') {
-            const latestSelf = formatted.find(u => u.id === currentUser.id);
-            if (latestSelf) {
-              setCurrentUser(latestSelf);
-              localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
-            }
+        // Update data user yang sedang login secara real-time
+        if (currentUser && currentUser.role !== 'admin') {
+          const latestSelf = formatted.find(u => u.id === currentUser.id);
+          if (latestSelf) {
+            setCurrentUser(latestSelf);
+            localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
           }
         }
-      } catch (err) {
-        console.error('Error fetching profiles:', err);
       }
+    } catch (err) {
+      console.error('Error fetching profiles:', err);
+    } finally {
+      if (!isBackground) setIsRefreshing(false);
     }
+  };
+
+  // Sinkronisasi awal & Auto-sync setiap 5 detik agar perangkat lain langsung terlihat datanya
+  useEffect(() => {
     fetchProfiles();
+    const interval = setInterval(() => {
+      fetchProfiles(true); // Auto-sync di background
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const [previewDoc, setPreviewDoc] = useState(null);
@@ -166,19 +178,8 @@ export default function App() {
     }
 
     const newId = 'u_' + Date.now();
-    const newUser = {
-      id: newId,
-      name: regName,
-      email: regEmail,
-      phone: regPhone,
-      password: regPassword,
-      clinicName: regClinicName,
-      clinicType: regClinicType,
-      status: 'Menunggu Verifikasi',
-      submissionDate: new Date().toISOString().split('T')[0],
-      documents: generateInitialDocuments(),
-      visitRevision: { name: 'Belum diunggah', url: '', note: '' }
-    };
+    const newDocuments = generateInitialDocuments();
+    const newVisitRevision = { name: 'Belum diunggah', url: '', note: '' };
 
     if (supabase) {
       const { error } = await supabase.from('SIPERKLIN').insert([
@@ -191,8 +192,8 @@ export default function App() {
           clinic_type: regClinicType,
           password: regPassword,
           status: 'Menunggu Verifikasi',
-          documents: newUser.documents,
-          visit_revision: newUser.visitRevision
+          documents: newDocuments,
+          visit_revision: newVisitRevision
         }
       ]);
       if (error) {
@@ -201,9 +202,9 @@ export default function App() {
       }
     }
 
-    setUsers([...users, newUser]);
     setRegSuccess('Pendaftaran berhasil! Silakan masuk.');
     setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName(''); setRegClinicType('Klinik Pratama');
+    fetchProfiles();
     setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
   };
 
@@ -228,18 +229,6 @@ export default function App() {
         }
       };
 
-      const updatedUsers = users.map(u => {
-        if (u.id === currentUser.id) {
-          return { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
-        }
-        return u;
-      });
-
-      setUsers(updatedUsers);
-      const updatedSelf = updatedUsers.find(u => u.id === currentUser.id);
-      setCurrentUser(updatedSelf);
-      localStorage.setItem('siperklin_current_user', JSON.stringify(updatedSelf));
-
       if (supabase) {
         const { error } = await supabase.from('SIPERKLIN').update({
           documents: updatedDocs,
@@ -253,6 +242,7 @@ export default function App() {
       }
 
       alert('Dokumen PDF berhasil diunggah!');
+      fetchProfiles();
     };
   };
 
@@ -273,18 +263,6 @@ export default function App() {
         note: ''
       };
 
-      const updatedUsers = users.map(u => {
-        if (u.id === currentUser.id) {
-          return { ...u, visitRevision: revisionData, status: 'Menunggu Verifikasi Visitasi' };
-        }
-        return u;
-      });
-
-      setUsers(updatedUsers);
-      const updatedSelf = updatedUsers.find(u => u.id === currentUser.id);
-      setCurrentUser(updatedSelf);
-      localStorage.setItem('siperklin_current_user', JSON.stringify(updatedSelf));
-
       if (supabase) {
         const { error } = await supabase.from('SIPERKLIN').update({
           visit_revision: revisionData,
@@ -298,46 +276,43 @@ export default function App() {
       }
 
       alert('Berkas perbaikan setelah visitasi berhasil diunggah!');
+      fetchProfiles();
     };
   };
 
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
-    let targetUser = null;
-    const updatedUsers = users.map(u => {
-      if (u.id === userId) {
-        const updatedDocs = {
-          ...u.documents,
-          [docKey]: { ...u.documents[docKey], status: newStatus, note: newNote }
-        };
-        const statuses = Object.values(updatedDocs).map(d => d.status);
-        let overallStatus = 'Sedang Diperiksa';
-        if (statuses.every(s => s === 'Sudah Terverifikasi')) {
-          overallStatus = 'Sudah Terverifikasi';
-        } else if (statuses.some(s => s === 'Catatan Perbaikan')) {
-          overallStatus = 'Catatan Perbaikan';
-        }
-        targetUser = { ...u, documents: updatedDocs, status: overallStatus };
-        return targetUser;
-      }
-      return u;
-    });
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
 
-    setUsers(updatedUsers);
+    const updatedDocs = {
+      ...targetUser.documents,
+      [docKey]: { ...targetUser.documents[docKey], status: newStatus, note: newNote }
+    };
 
-    if (supabase && targetUser) {
+    const statuses = Object.values(updatedDocs).map(d => d.status);
+    let overallStatus = 'Sedang Diperiksa';
+    if (statuses.every(s => s === 'Sudah Terverifikasi')) {
+      overallStatus = 'Sudah Terverifikasi';
+    } else if (statuses.some(s => s === 'Catatan Perbaikan')) {
+      overallStatus = 'Catatan Perbaikan';
+    }
+
+    if (supabase) {
       await supabase.from('SIPERKLIN').update({
-        documents: targetUser.documents,
-        status: targetUser.status
+        documents: updatedDocs,
+        status: overallStatus
       }).eq('id', userId);
+
+      fetchProfiles();
     }
   };
 
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Yakin ingin menghapus pemohon ini?')) {
-      setUsers(users.filter(u => u.id !== userId));
       if (supabase) {
         await supabase.from('SIPERKLIN').delete().eq('id', userId);
       }
+      fetchProfiles();
     }
   };
 
@@ -363,23 +338,32 @@ export default function App() {
             </div>
           </div>
 
-          {currentUser ? (
-            <div className="flex items-center space-x-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
-                <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : `${currentUser.clinicName} (${currentUser.clinicType})`}</p>
-              </div>
-              <button onClick={handleLogout} className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200">
-                <LogOut className="w-4 h-4" />
-                <span>Keluar</span>
+          <div className="flex items-center space-x-3">
+            {currentUser && (
+              <button onClick={() => fetchProfiles(false)} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200">
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span>{isRefreshing ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
               </button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Dinas Kesehatan Kabupaten Badung</span>
-            </div>
-          )}
+            )}
+
+            {currentUser ? (
+              <div className="flex items-center space-x-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
+                  <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : `${currentUser.clinicName} (${currentUser.clinicType})`}</p>
+                </div>
+                <button onClick={handleLogout} className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200">
+                  <LogOut className="w-4 h-4" />
+                  <span>Keluar</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Dinas Kesehatan Kabupaten Badung</span>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
