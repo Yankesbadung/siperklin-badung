@@ -56,10 +56,20 @@ const generateInitialDocuments = () => {
 };
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('login');
-  const [authTab, setAuthTab] = useState('login');
-  const [currentUser, setCurrentUser] = useState(null);
+  // Mengambil sesi login dari localStorage agar tidak logout saat refresh
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = localStorage.getItem('siperklin_current_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
+  const [currentView, setCurrentView] = useState(() => {
+    const savedUser = localStorage.getItem('siperklin_current_user');
+    if (!savedUser) return 'login';
+    const parsed = JSON.parse(savedUser);
+    return parsed.role === 'admin' ? 'admin-dashboard' : 'user-dashboard';
+  });
+
+  const [authTab, setAuthTab] = useState('login');
   const [loginInput, setLoginInput] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -93,22 +103,15 @@ export default function App() {
             visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '' }
           }));
           setUsers(formatted);
-        } else {
-          setUsers([
-            {
-              id: 'u1',
-              name: 'Dr. Made Surya, M.Kes',
-              email: 'surya@kliniksehat.com',
-              phone: '081234567890',
-              password: 'password123',
-              clinicName: 'Klinik Pratama Sehat Mandiri',
-              clinicType: 'Klinik Pratama',
-              status: 'Sedang Diperiksa',
-              submissionDate: '2026-08-20',
-              documents: generateInitialDocuments(),
-              visitRevision: { name: 'Belum diunggah', url: '', note: '' }
+
+          // Update data currentUser jika sedang aktif agar datanya selalu terbaru
+          if (currentUser && currentUser.role !== 'admin') {
+            const latestSelf = formatted.find(u => u.id === currentUser.id);
+            if (latestSelf) {
+              setCurrentUser(latestSelf);
+              localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
             }
-          ]);
+          }
         }
       } catch (err) {
         console.error('Error fetching profiles:', err);
@@ -124,8 +127,10 @@ export default function App() {
     setLoginError('');
 
     if ((loginInput.trim() === 'yankesbadung' || loginInput.trim() === 'yankesbadung@badungkab.go.id') && loginPassword === 'Pelayanankesehatan1') {
-      setCurrentUser({ role: 'admin', name: 'Administrator Bidang Yankes', email: 'yankesbadung' });
+      const adminData = { role: 'admin', name: 'Administrator Bidang Yankes', email: 'yankesbadung' };
+      setCurrentUser(adminData);
       setCurrentView('admin-dashboard');
+      localStorage.setItem('siperklin_current_user', JSON.stringify(adminData));
       return;
     }
 
@@ -136,9 +141,16 @@ export default function App() {
     if (foundUser) {
       setCurrentUser(foundUser);
       setCurrentView('user-dashboard');
+      localStorage.setItem('siperklin_current_user', JSON.stringify(foundUser));
     } else {
       setLoginError('Username/Email/No. Telp atau Password salah, atau akun belum terdaftar.');
     }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setCurrentView('login');
+    localStorage.removeItem('siperklin_current_user');
   };
 
   const handleRegister = async (e) => {
@@ -226,7 +238,9 @@ export default function App() {
       });
 
       setUsers(updatedUsers);
-      setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
+      const updatedSelf = updatedUsers.find(u => u.id === currentUser.id);
+      setCurrentUser(updatedSelf);
+      localStorage.setItem('siperklin_current_user', JSON.stringify(updatedSelf));
 
       if (supabase) {
         const { error } = await supabase.from('SIPERKLIN').update({
@@ -244,7 +258,6 @@ export default function App() {
     };
   };
 
-  // Fungsi Unggah Berkas Perbaikan Setelah Visitasi
   const handleUploadVisitRevision = async (file) => {
     if (file.size > 5 * 1024 * 1024) {
       alert('Ukuran file terlalu besar! Maksimal 5MB.');
@@ -270,7 +283,9 @@ export default function App() {
       });
 
       setUsers(updatedUsers);
-      setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
+      const updatedSelf = updatedUsers.find(u => u.id === currentUser.id);
+      setCurrentUser(updatedSelf);
+      localStorage.setItem('siperklin_current_user', JSON.stringify(updatedSelf));
 
       if (supabase) {
         const { error } = await supabase.from('SIPERKLIN').update({
@@ -356,7 +371,7 @@ export default function App() {
                 <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
                 <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : `${currentUser.clinicName} (${currentUser.clinicType})`}</p>
               </div>
-              <button onClick={() => { setCurrentUser(null); setCurrentView('login'); }} className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200">
+              <button onClick={handleLogout} className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200">
                 <LogOut className="w-4 h-4" />
                 <span>Keluar</span>
               </button>
@@ -371,7 +386,7 @@ export default function App() {
       </header>
 
       <main className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        {currentView === 'login' && (
+        {!currentUser && (
           <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-emerald-100">
             <div className="lg:col-span-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 p-8 sm:p-12 text-white flex flex-col justify-between">
               <div>
@@ -460,7 +475,7 @@ export default function App() {
           </div>
         )}
 
-        {currentView === 'user-dashboard' && currentUser && currentUser.role !== 'admin' && (
+        {currentUser && currentUser.role !== 'admin' && (
           <div className="w-full max-w-6xl space-y-6">
             <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
@@ -477,7 +492,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* MENU KHUSUS UNGGAH PERBAIKAN SETELAH VISITASI */}
             <div className="bg-white rounded-3xl shadow-sm border border-amber-200 p-6 sm:p-8 bg-amber-50/30">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
@@ -569,7 +583,7 @@ export default function App() {
           </div>
         )}
 
-        {currentView === 'admin-dashboard' && currentUser && currentUser.role === 'admin' && (
+        {currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
             <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex justify-between items-center">
               <div>
@@ -612,7 +626,6 @@ export default function App() {
                           </div>
                           <p className="text-xs text-gray-500 mt-1">PJ: {u.name} | Email: {u.email} | WA: {u.phone}</p>
                           
-                          {/* INFO BERKAS PERBAIKAN VISITASI UNTUK ADMIN */}
                           {u.visitRevision?.name && u.visitRevision.name !== 'Belum diunggah' && (
                             <div className="mt-2 inline-flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl text-xs text-amber-900">
                               <span className="font-bold">Perbaikan Visitasi:</span>
