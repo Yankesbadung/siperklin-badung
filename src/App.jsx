@@ -74,36 +74,127 @@ export default function App() {
   const [regClinicName, setRegClinicName] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
 
-  const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('siperklin_users_28');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* ignore */ }
-    }
-    return [
-      {
-        id: 'u1',
-        name: 'Dr. Made Surya, M.Kes',
-        email: 'surya@kliniksehat.com',
-        phone: '081234567890',
-        password: 'password123',
-        clinicName: 'Klinik Pratama Sehat Mandiri',
-        status: 'Sedang Diperiksa',
-        submissionDate: '2026-08-20',
-        documents: generateInitialDocuments()
-      }
-    ];
-  });
+  // Mengambil data dari database Supabase (tabel: SIPERKLIN) secara real-time
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-  async function fetchUsers() {
-    if (!supabase) return;
-    const { data, error } = await supabase.from('profiles').select('*');
-    if (data && data.length > 0) {
-      setUsers(data);
+    async function fetchProfiles() {
+      if (!supabase) return;
+      const { data, error } = await supabase.from('SIPERKLIN').select('*');
+      if (data && data.length > 0) {
+        const formatted = data.map(item => ({
+          id: item.id,
+          name: item.name,
+          email: item.email,
+          phone: item.phone,
+          clinicName: item.clinic_name,
+          password: item.password,
+          status: item.status,
+          documents: item.documents
+        }));
+        setUsers(formatted);
+      } else {
+        // Data default jika tabel di Supabase masih kosong
+        setUsers([
+          {
+            id: 'u1',
+            name: 'Dr. Made Surya, M.Kes',
+            email: 'surya@kliniksehat.com',
+            phone: '081234567890',
+            password: 'password123',
+            clinicName: 'Klinik Pratama Sehat Mandiri',
+            status: 'Sedang Diperiksa',
+            submissionDate: '2026-08-20',
+            documents: generateInitialDocuments()
+          }
+        ]);
+      }
     }
-  }
-  fetchUsers();
-}, []);
+    fetchProfiles();
+  }, []);
+
+  // Fungsi Pendaftaran Baru (Menyimpan langsung ke Supabase)
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setRegSuccess('');
+
+    if (!regName || !regEmail || !regPhone || !regPassword || !regClinicName) {
+      alert('Semua kolom wajib diisi!');
+      return;
+    }
+
+    if (users.some(u => u.email === regEmail)) {
+      alert('Email sudah terdaftar. Silakan gunakan email lain.');
+      return;
+    }
+
+    const newId = 'u_' + Date.now();
+    const newUser = {
+      id: newId,
+      name: regName,
+      email: regEmail,
+      phone: regPhone,
+      password: regPassword,
+      clinicName: regClinicName,
+      status: 'Menunggu Verifikasi',
+      submissionDate: new Date().toISOString().split('T')[0],
+      documents: generateInitialDocuments()
+    };
+
+    // Kirim data ke tabel SIPERKLIN di Supabase
+    if (supabase) {
+      const { error } = await supabase.from('SIPERKLIN').insert([
+        {
+          id: newId,
+          name: regName,
+          email: regEmail,
+          phone: regPhone,
+          clinic_name: regClinicName,
+          password: regPassword,
+          status: 'Menunggu Verifikasi',
+          documents: newUser.documents
+        }
+      ]);
+      if (error) {
+        alert('Gagal menyimpan ke database cloud: ' + error.message);
+        return;
+      }
+    }
+
+    setUsers([...users, newUser]);
+    setRegSuccess('Pendaftaran berhasil! Silakan masuk menggunakan akun baru.');
+    setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName('');
+    setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
+  };
+
+  // Fungsi Unggah Dokumen PDF (Menyimpan pembaruan ke Supabase)
+  const handleUploadDoc = async (docKey, file) => {
+    const fileUrl = URL.createObjectURL(file);
+    const updatedDocs = {
+      ...currentUser.documents,
+      [docKey]: { name: file.name, url: fileUrl, status: 'Menunggu Verifikasi', note: '' }
+    };
+
+    const updatedUsers = users.map(u => {
+      if (u.id === currentUser.id) {
+        return { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
+      }
+      return u;
+    });
+
+    setUsers(updatedUsers);
+    setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
+
+    // Perbarui data dokumen di Supabase
+    if (supabase) {
+      await supabase.from('SIPERKLIN').update({
+        documents: updatedDocs,
+        status: 'Sedang Diperiksa'
+      }).eq('id', currentUser.id);
+    }
+
+    alert('Dokumen PDF berhasil diunggah dan disinkronkan ke cloud!');
+  };
 
   const [previewDoc, setPreviewDoc] = useState(null);
 
