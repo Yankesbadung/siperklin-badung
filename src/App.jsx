@@ -73,25 +73,39 @@ export default function App() {
 
   const [users, setUsers] = useState([]);
 
+  // Refactoring fetchProfiles: Mengambil dan memetakan data dari API Supabase secara aman
   useEffect(() => {
     async function fetchProfiles() {
-      if (!supabase) return;
-      const { data, error } = await supabase.from('SIPERKLIN').select('*');
-      if (data && data.length > 0) {
-        const formatted = data.map(item => ({
-          id: item.id,
-          name: item.name,
-          email: item.email,
-          phone: item.phone,
-          clinicName: item.clinic_name,
-          password: item.password,
-          status: item.status,
-          documents: item.documents
-        }));
-        setUsers(formatted);
-      } else {
-        setUsers([
-          {
+      if (!supabase) {
+        console.warn('Supabase belum terhubung. Menggunakan data lokal.');
+        return;
+      }
+
+      try {
+        // Memanggil API Supabase untuk mengambil seluruh data dari tabel SIPERKLIN
+        const { data, error } = await supabase.from('SIPERKLIN').select('*');
+
+        if (error) {
+          console.error('Gagal mengambil data dari Supabase:', error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // Mapping / penyesuaian nama kolom database ke state aplikasi React
+          const formattedData = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            email: item.email,
+            phone: item.phone,
+            clinicName: item.clinic_name, // Mengubah clinic_name (database) menjadi clinicName (aplikasi)
+            password: item.password,
+            status: item.status,
+            documents: item.documents || generateInitialDocuments()
+          }));
+          setUsers(formattedData);
+        } else {
+          // Jika tabel di Supabase masih kosong, masukkan data default panduan awal
+          const defaultUser = {
             id: 'u1',
             name: 'Dr. Made Surya, M.Kes',
             email: 'surya@kliniksehat.com',
@@ -101,10 +115,14 @@ export default function App() {
             status: 'Sedang Diperiksa',
             submissionDate: '2026-08-20',
             documents: generateInitialDocuments()
-          }
-        ]);
+          };
+          setUsers([defaultUser]);
+        }
+      } catch (err) {
+        console.error('Terjadi kesalahan tak terduga saat mengambil data:', err);
       }
     }
+
     fetchProfiles();
   }, []);
 
