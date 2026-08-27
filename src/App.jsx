@@ -4,7 +4,6 @@ import {
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
   Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw 
 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 
 // Inisialisasi koneksi Supabase menggunakan Environment Variables Vercel
 import { createClient } from '@supabase/supabase-js';
