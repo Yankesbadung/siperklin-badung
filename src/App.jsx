@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw 
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle 
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -89,7 +89,8 @@ export default function App() {
             clinicType: item.clinic_type || 'Klinik Pratama',
             password: item.password,
             status: item.status,
-            documents: item.documents || generateInitialDocuments()
+            documents: item.documents || generateInitialDocuments(),
+            visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '' }
           }));
           setUsers(formatted);
         } else {
@@ -104,7 +105,8 @@ export default function App() {
               clinicType: 'Klinik Pratama',
               status: 'Sedang Diperiksa',
               submissionDate: '2026-08-20',
-              documents: generateInitialDocuments()
+              documents: generateInitialDocuments(),
+              visitRevision: { name: 'Belum diunggah', url: '', note: '' }
             }
           ]);
         }
@@ -164,7 +166,8 @@ export default function App() {
       clinicType: regClinicType,
       status: 'Menunggu Verifikasi',
       submissionDate: new Date().toISOString().split('T')[0],
-      documents: generateInitialDocuments()
+      documents: generateInitialDocuments(),
+      visitRevision: { name: 'Belum diunggah', url: '', note: '' }
     };
 
     if (supabase) {
@@ -178,7 +181,8 @@ export default function App() {
           clinic_type: regClinicType,
           password: regPassword,
           status: 'Menunggu Verifikasi',
-          documents: newUser.documents
+          documents: newUser.documents,
+          visit_revision: newUser.visitRevision
         }
       ]);
       if (error) {
@@ -231,12 +235,56 @@ export default function App() {
         }).eq('id', currentUser.id);
 
         if (error) {
-          alert('Gagal menyinkronkan dokumen ke database cloud: ' + error.message);
+          alert('Gagal menyinkronkan dokumen: ' + error.message);
           return;
         }
       }
 
       alert('Dokumen PDF berhasil diunggah!');
+    };
+  };
+
+  // Fungsi Unggah Berkas Perbaikan Setelah Visitasi
+  const handleUploadVisitRevision = async (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran file terlalu besar! Maksimal 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+      const base64Url = reader.result;
+      const revisionData = {
+        name: file.name,
+        url: base64Url,
+        status: 'Menunggu Verifikasi Visitasi',
+        note: ''
+      };
+
+      const updatedUsers = users.map(u => {
+        if (u.id === currentUser.id) {
+          return { ...u, visitRevision: revisionData, status: 'Menunggu Verifikasi Visitasi' };
+        }
+        return u;
+      });
+
+      setUsers(updatedUsers);
+      setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
+
+      if (supabase) {
+        const { error } = await supabase.from('SIPERKLIN').update({
+          visit_revision: revisionData,
+          status: 'Menunggu Verifikasi Visitasi'
+        }).eq('id', currentUser.id);
+
+        if (error) {
+          alert('Gagal mengunggah berkas perbaikan visitasi: ' + error.message);
+          return;
+        }
+      }
+
+      alert('Berkas perbaikan setelah visitasi berhasil diunggah!');
     };
   };
 
@@ -423,11 +471,42 @@ export default function App() {
               <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20">
                 <p className="text-xs text-emerald-200 font-medium">Status Pengajuan</p>
                 <p className="text-sm font-bold flex items-center space-x-1.5 mt-0.5">
-                  {currentUser.status === 'Sudah Terverifikasi' && <CheckCircle2 className="w-4 h-4 text-emerald-300" />}
-                  {currentUser.status === 'Sedang Diperiksa' && <Clock className="w-4 h-4 text-amber-300" />}
+                  <Clock className="w-4 h-4 text-amber-300" />
                   <span>{currentUser.status}</span>
                 </p>
               </div>
+            </div>
+
+            {/* MENU KHUSUS UNGGAH PERBAIKAN SETELAH VISITASI */}
+            <div className="bg-white rounded-3xl shadow-sm border border-amber-200 p-6 sm:p-8 bg-amber-50/30">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <div className="flex items-center space-x-2 text-amber-800 font-bold mb-1">
+                    <AlertTriangle className="w-5 h-5 text-amber-600" />
+                    <h2>Menu Perbaikan / Tindak Lanjut Setelah Visitasi Lapangan</h2>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Jika tim Dinas Kesehatan telah melakukan visitasi dan memberikan catatan perbaikan, silakan unggah dokumen/berkas perbaikan Anda di sini.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  {currentUser.visitRevision?.name && currentUser.visitRevision.name !== 'Belum diunggah' && (
+                    <button onClick={() => setPreviewDoc({ title: 'Berkas Perbaikan Visitasi', name: currentUser.visitRevision.name, url: currentUser.visitRevision.url, status: currentUser.visitRevision.status, note: '' })} className="text-xs bg-white text-emerald-700 border border-emerald-300 px-3 py-2 rounded-xl font-bold flex items-center space-x-1">
+                      <Eye className="w-3.5 h-3.5" /><span>Lihat Berkas</span>
+                    </button>
+                  )}
+                  <label className="cursor-pointer bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow transition flex items-center space-x-1.5">
+                    <Upload className="w-4 h-4" />
+                    <span>{currentUser.visitRevision?.name === 'Belum diunggah' ? 'Unggah Berkas Perbaikan' : 'Ganti Berkas Perbaikan'}</span>
+                    <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadVisitRevision(e.target.files[0]); }} />
+                  </label>
+                </div>
+              </div>
+              {currentUser.visitRevision?.name && currentUser.visitRevision.name !== 'Belum diunggah' && (
+                <p className="text-xs text-emerald-700 mt-3 font-semibold">
+                  ✓ Berkas terunggah: {currentUser.visitRevision.name} ({currentUser.visitRevision.status})
+                </p>
+              )}
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8">
@@ -495,7 +574,7 @@ export default function App() {
             <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex justify-between items-center">
               <div>
                 <span className="bg-emerald-800 text-emerald-200 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-700">Panel Administrator</span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Verifikasi 28 Dokumen Klinik Pemohon</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Verifikasi Dokumen & Perbaikan Visitasi Klinik</h1>
                 <p className="text-gray-300 text-xs mt-1">Dinas Kesehatan Kabupaten Badung • {currentDateFormatted}</p>
               </div>
             </div>
@@ -516,7 +595,7 @@ export default function App() {
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Daftar Pemohon Klinik & Pemeriksaan 28 Dokumen</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Daftar Pemohon Klinik & Berkas Perbaikan Visitasi</h2>
               
               {users.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-2xl"><p className="text-sm font-bold text-gray-700">Belum ada pemohon terdaftar.</p></div>
@@ -532,6 +611,15 @@ export default function App() {
                             <span className={`text-xs px-3 py-1 rounded-full font-semibold ${u.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{u.status}</span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">PJ: {u.name} | Email: {u.email} | WA: {u.phone}</p>
+                          
+                          {/* INFO BERKAS PERBAIKAN VISITASI UNTUK ADMIN */}
+                          {u.visitRevision?.name && u.visitRevision.name !== 'Belum diunggah' && (
+                            <div className="mt-2 inline-flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl text-xs text-amber-900">
+                              <span className="font-bold">Perbaikan Visitasi:</span>
+                              <span>{u.visitRevision.name}</span>
+                              <button onClick={() => setPreviewDoc({ title: 'Perbaikan Visitasi — ' + u.clinicName, name: u.visitRevision.name, url: u.visitRevision.url, status: u.visitRevision.status, note: '' })} className="text-emerald-700 font-bold underline ml-1">Lihat File</button>
+                            </div>
+                          )}
                         </div>
                         <button onClick={() => handleDeleteUser(u.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl text-xs font-semibold border border-red-200 flex items-center space-x-1">
                           <Trash2 className="w-3.5 h-3.5" /><span>Hapus Pemohon</span>
