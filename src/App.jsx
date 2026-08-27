@@ -64,11 +64,13 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  // State Pendaftaran (Termasuk Pilihan Jenis Klinik)
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regClinicName, setRegClinicName] = useState('');
+  const [regClinicType, setRegClinicType] = useState('Klinik Pratama'); // Default pilihan
   const [regSuccess, setRegSuccess] = useState('');
 
   const [users, setUsers] = useState([]);
@@ -86,6 +88,7 @@ export default function App() {
             email: item.email,
             phone: item.phone,
             clinicName: item.clinic_name,
+            clinicType: item.clinic_type || 'Klinik Pratama',
             password: item.password,
             status: item.status,
             documents: item.documents || generateInitialDocuments()
@@ -100,6 +103,7 @@ export default function App() {
               phone: '081234567890',
               password: 'password123',
               clinicName: 'Klinik Pratama Sehat Mandiri',
+              clinicType: 'Klinik Pratama',
               status: 'Sedang Diperiksa',
               submissionDate: '2026-08-20',
               documents: generateInitialDocuments()
@@ -141,7 +145,7 @@ export default function App() {
     e.preventDefault();
     setRegSuccess('');
 
-    if (!regName || !regEmail || !regPhone || !regPassword || !regClinicName) {
+    if (!regName || !regEmail || !regPhone || !regPassword || !regClinicName || !regClinicType) {
       alert('Semua kolom wajib diisi!');
       return;
     }
@@ -159,6 +163,7 @@ export default function App() {
       phone: regPhone,
       password: regPassword,
       clinicName: regClinicName,
+      clinicType: regClinicType,
       status: 'Menunggu Verifikasi',
       submissionDate: new Date().toISOString().split('T')[0],
       documents: generateInitialDocuments()
@@ -172,6 +177,7 @@ export default function App() {
           email: regEmail,
           phone: regPhone,
           clinic_name: regClinicName,
+          clinic_type: regClinicType,
           password: regPassword,
           status: 'Menunggu Verifikasi',
           documents: newUser.documents
@@ -185,14 +191,13 @@ export default function App() {
 
     setUsers([...users, newUser]);
     setRegSuccess('Pendaftaran berhasil! Silakan masuk.');
-    setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName('');
+    setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName(''); setRegClinicType('Klinik Pratama');
     setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
   };
 
-  // REFACTORED: Mengonversi file PDF menjadi Base64 agar dapat disimpan di database dan dilihat di perangkat lain
   const handleUploadDoc = async (docKey, file) => {
     if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file terlalu besar! Maksimal 5MB agar dapat tersimpan sempurna di database.');
+      alert('Ukuran file terlalu besar! Maksimal 5MB.');
       return;
     }
 
@@ -233,12 +238,7 @@ export default function App() {
         }
       }
 
-      alert('Dokumen PDF berhasil diunggah dan dibagikan secara online!');
-    };
-
-    reader.onerror = (error) => {
-      console.error('Error membaca file:', error);
-      alert('Gagal membaca file PDF.');
+      alert('Dokumen PDF berhasil diunggah!');
     };
   };
 
@@ -308,7 +308,7 @@ export default function App() {
             <div className="flex items-center space-x-4">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
-                <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : currentUser.clinicName}</p>
+                <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : `${currentUser.clinicName} (${currentUser.clinicType})`}</p>
               </div>
               <button onClick={() => { setCurrentUser(null); setCurrentView('login'); }} className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200">
                 <LogOut className="w-4 h-4" />
@@ -373,6 +373,7 @@ export default function App() {
                 <form onSubmit={handleRegister} className="space-y-4">
                   <h2 className="text-xl font-bold text-gray-900 mb-1">Pendaftaran Akun Klinik</h2>
                   {regSuccess && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-xl"><span>{regSuccess}</span></div>}
+                  
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pemohon</label>
@@ -383,6 +384,16 @@ export default function App() {
                       <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
+
+                  {/* TAMBAHAN MENU PILIHAN JENIS KLINIK */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Jenis Klinik</label>
+                    <select value={regClinicType} onChange={(e) => setRegClinicType(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm">
+                      <option value="Klinik Pratama">Klinik Pratama</option>
+                      <option value="Klinik Utama">Klinik Utama</option>
+                    </select>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Email</label>
@@ -408,7 +419,7 @@ export default function App() {
           <div className="w-full max-w-6xl space-y-6">
             <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <span className="bg-emerald-700 text-emerald-100 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-600">Dashboard Pemohon (28 Dokumen Wajib)</span>
+                <span className="bg-emerald-700 text-emerald-100 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-600">Dashboard Pemohon ({currentUser.clinicType})</span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">{currentUser.clinicName}</h1>
                 <p className="text-emerald-100 text-sm mt-1">PJ: {currentUser.name} | WhatsApp: {currentUser.phone}</p>
               </div>
@@ -520,6 +531,7 @@ export default function App() {
                         <div>
                           <div className="flex items-center space-x-3">
                             <h3 className="font-extrabold text-gray-900 text-base">{u.clinicName}</h3>
+                            <span className="bg-teal-100 text-teal-800 text-[11px] px-2.5 py-0.5 rounded-full font-bold">{u.clinicType || 'Klinik Pratama'}</span>
                             <span className={`text-xs px-3 py-1 rounded-full font-semibold ${u.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{u.status}</span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">PJ: {u.name} | Email: {u.email} | WA: {u.phone}</p>
@@ -603,7 +615,7 @@ export default function App() {
 
             <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
               <span className="text-xs text-gray-500">Status: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
-              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">Tutup</button>
+              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">Tutup</Link>
             </div>
           </div>
         </div>
