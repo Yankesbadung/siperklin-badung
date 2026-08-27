@@ -64,18 +64,16 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  // State Pendaftaran (Termasuk Pilihan Jenis Klinik)
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regClinicName, setRegClinicName] = useState('');
-  const [regClinicType, setRegClinicType] = useState('Klinik Pratama'); // Default pilihan
+  const [regClinicType, setRegClinicType] = useState('Klinik Pratama');
   const [regSuccess, setRegSuccess] = useState('');
 
   const [users, setUsers] = useState([]);
 
-  // Mengambil data dari Supabase
   useEffect(() => {
     async function fetchProfiles() {
       if (!supabase) return;
@@ -385,7 +383,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* TAMBAHAN MENU PILIHAN JENIS KLINIK */}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Jenis Klinik</label>
                     <select value={regClinicType} onChange={(e) => setRegClinicType(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm">
@@ -615,7 +612,7 @@ export default function App() {
 
             <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
               <span className="text-xs text-gray-500">Status: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
-              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">Tutup</Link>
+              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">Tutup</button>
             </div>
           </div>
         </div>
