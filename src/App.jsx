@@ -84,7 +84,7 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fungsi untuk menarik data dari Supabase
+  // Fungsi mengambil data dari Supabase
   const fetchProfiles = async (isBackground = false) => {
     if (!supabase) return;
     if (!isBackground) setIsRefreshing(true);
@@ -105,7 +105,6 @@ export default function App() {
         }));
         setUsers(formatted);
 
-        // Update data user yang sedang login secara real-time
         if (currentUser && currentUser.role !== 'admin') {
           const latestSelf = formatted.find(u => u.id === currentUser.id);
           if (latestSelf) {
@@ -121,11 +120,11 @@ export default function App() {
     }
   };
 
-  // Sinkronisasi awal & Auto-sync setiap 5 detik agar perangkat lain langsung terlihat datanya
+  // Sinkronisasi otomatis setiap 5 detik
   useEffect(() => {
     fetchProfiles();
     const interval = setInterval(() => {
-      fetchProfiles(true); // Auto-sync di background
+      fetchProfiles(true);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
