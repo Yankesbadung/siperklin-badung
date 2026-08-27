@@ -712,6 +712,7 @@ export default function App() {
             <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
               <span className="text-xs text-gray-500">Status: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
               <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">Tutup</buttom>
+              
             </div>
           </div>
         </div>
