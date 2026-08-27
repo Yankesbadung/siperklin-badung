@@ -56,7 +56,6 @@ const generateInitialDocuments = () => {
 };
 
 export default function App() {
-  // Mengambil sesi login dari localStorage agar tidak logout saat refresh
   const [currentUser, setCurrentUser] = useState(() => {
     const savedUser = localStorage.getItem('siperklin_current_user');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -104,7 +103,6 @@ export default function App() {
           }));
           setUsers(formatted);
 
-          // Update data currentUser jika sedang aktif agar datanya selalu terbaru
           if (currentUser && currentUser.role !== 'admin') {
             const latestSelf = formatted.find(u => u.id === currentUser.id);
             if (latestSelf) {
