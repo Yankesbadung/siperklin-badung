@@ -4,14 +4,12 @@ import {
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
   Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw 
 } from 'lucide-react';
-
-// Inisialisasi koneksi Supabase menggunakan Environment Variables Vercel
 import { createClient } from '@supabase/supabase-js';
 
+// Inisialisasi koneksi Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
-
 // Daftar 28 Dokumen Persyaratan Perizinan Klinik (SIPERKLIN)
 const LIST_28_DOKUMEN = [
   { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
