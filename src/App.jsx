@@ -10,7 +10,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
-// Daftar 28 Dokumen Persyaratan Perizinan Klinik (SIPERKLIN)
+
 const LIST_28_DOKUMEN = [
   { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
   { key: 'dok_2', title: '2. Profil Lengkap Klinik', desc: 'Visi, misi, struktur organisasi, & layanan' },
@@ -71,13 +71,12 @@ export default function App() {
   const [regClinicName, setRegClinicName] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
 
-  // Mengambil data dari database Supabase (tabel: profiles) secara real-time
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
     async function fetchProfiles() {
       if (!supabase) return;
-      const { data, error } = await supabase.from('profiles').select('*');
+      const { data, error } = await supabase.from('SIPERKLIN').select('*');
       if (data && data.length > 0) {
         const formatted = data.map(item => ({
           id: item.id,
@@ -91,7 +90,6 @@ export default function App() {
         }));
         setUsers(formatted);
       } else {
-        // Data default jika tabel di Supabase masih kosong
         setUsers([
           {
             id: 'u1',
@@ -110,7 +108,30 @@ export default function App() {
     fetchProfiles();
   }, []);
 
-  // Fungsi Pendaftaran Baru (Menyimpan langsung ke Supabase)
+  const [previewDoc, setPreviewDoc] = useState(null);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginError('');
+
+    if ((loginInput.trim() === 'yankesbadung' || loginInput.trim() === 'yankesbadung@badungkab.go.id') && loginPassword === 'Pelayanankesehatan1') {
+      setCurrentUser({ role: 'admin', name: 'Administrator Bidang Yankes', email: 'yankesbadung' });
+      setCurrentView('admin-dashboard');
+      return;
+    }
+
+    const foundUser = users.find(
+      u => (u.email === loginInput.trim() || u.name.toLowerCase() === loginInput.trim().toLowerCase() || u.phone === loginInput.trim()) && u.password === loginPassword
+    );
+
+    if (foundUser) {
+      setCurrentUser(foundUser);
+      setCurrentView('user-dashboard');
+    } else {
+      setLoginError('Username/Email/No. Telp atau Password salah, atau akun belum terdaftar.');
+    }
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setRegSuccess('');
@@ -138,9 +159,8 @@ export default function App() {
       documents: generateInitialDocuments()
     };
 
-    // Kirim data ke tabel SIPERKLIN di Supabase
     if (supabase) {
-      const { error } = await supabase.from('profiles').insert([
+      const { error } = await supabase.from('SIPERKLIN').insert([
         {
           id: newId,
           name: regName,
@@ -159,12 +179,11 @@ export default function App() {
     }
 
     setUsers([...users, newUser]);
-    setRegSuccess('Pendaftaran berhasil! Silakan masuk menggunakan akun baru.');
+    setRegSuccess('Pendaftaran berhasil! Silakan masuk.');
     setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName('');
     setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
   };
 
-  // Fungsi Unggah Dokumen PDF (Menyimpan pembaruan ke Supabase)
   const handleUploadDoc = async (docKey, file) => {
     const fileUrl = URL.createObjectURL(file);
     const updatedDocs = {
@@ -182,91 +201,18 @@ export default function App() {
     setUsers(updatedUsers);
     setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
 
-    // Perbarui data dokumen di Supabase
     if (supabase) {
-      await supabase.from('profiles').update({
+      await supabase.from('SIPERKLIN').update({
         documents: updatedDocs,
         status: 'Sedang Diperiksa'
       }).eq('id', currentUser.id);
     }
 
-    alert('Dokumen PDF berhasil diunggah dan disinkronkan ke cloud!');
-  };
-
-  const [previewDoc, setPreviewDoc] = useState(null);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setLoginError('');
-
-    if ((loginInput.trim() === 'yankesbadung' || loginInput.trim() === 'yankesbadung@badungkab.go.id') && loginPassword === 'Pelayanankesehatan1') {
-      setCurrentUser({ role: 'admin', name: 'Administrator Bidang Yankes', email: 'yankesbadung' });
-      setCurrentView('admin-dashboard');
-      return;
-    }
-
-    const foundUser = users.find(
-      u => (u.email === loginInput.trim() || u.name.toLowerCase() === loginInput.trim().toLowerCase() || u.phone === loginInput.trim()) && u.password === loginPassword
-    );
-
-    if (foundUser) {
-      setCurrentUser(foundUser);
-      setCurrentView('user-dashboard');
-    } else {
-      setLoginError('Username/Email/No. Telp atau Password salah, atau akun belum terdaftar.');
-    }
-  };
-
-  const handleRegister = (e) => {
-    e.preventDefault();
-    setRegSuccess('');
-
-    if (!regName || !regEmail || !regPhone || !regPassword || !regClinicName) {
-      alert('Semua kolom wajib diisi!');
-      return;
-    }
-
-    if (users.some(u => u.email === regEmail)) {
-      alert('Email sudah terdaftar. Silakan gunakan email lain.');
-      return;
-    }
-
-    const newUser = {
-      id: 'u_' + Date.now(),
-      name: regName,
-      email: regEmail,
-      phone: regPhone,
-      password: regPassword,
-      clinicName: regClinicName,
-      status: 'Menunggu Verifikasi',
-      submissionDate: new Date().toISOString().split('T')[0],
-      documents: generateInitialDocuments()
-    };
-
-    setUsers([...users, newUser]);
-    setRegSuccess('Pendaftaran berhasil! Silakan masuk menggunakan akun baru Anda.');
-    setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName('');
-    setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
-  };
-
-  const handleUploadDoc = (docKey, file) => {
-    const fileUrl = URL.createObjectURL(file);
-    const updatedUsers = users.map(u => {
-      if (u.id === currentUser.id) {
-        const updatedDocs = {
-          ...u.documents,
-          [docKey]: { name: file.name, url: fileUrl, status: 'Menunggu Verifikasi', note: '' }
-        };
-        return { ...u, documents: updatedDocs, status: 'Sedang Diperiksa' };
-      }
-      return u;
-    });
-    setUsers(updatedUsers);
-    setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
     alert('Dokumen PDF berhasil diunggah!');
   };
 
-  const handleAdminUpdateDocStatus = (userId, docKey, newStatus, newNote) => {
+  const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
+    let targetUser = null;
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
         const updatedDocs = {
@@ -280,16 +226,28 @@ export default function App() {
         } else if (statuses.some(s => s === 'Catatan Perbaikan')) {
           overallStatus = 'Catatan Perbaikan';
         }
-        return { ...u, documents: updatedDocs, status: overallStatus };
+        targetUser = { ...u, documents: updatedDocs, status: overallStatus };
+        return targetUser;
       }
       return u;
     });
+
     setUsers(updatedUsers);
+
+    if (supabase && targetUser) {
+      await supabase.from('SIPERKLIN').update({
+        documents: targetUser.documents,
+        status: targetUser.status
+      }).eq('id', userId);
+    }
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     if (window.confirm('Yakin ingin menghapus pemohon ini?')) {
       setUsers(users.filter(u => u.id !== userId));
+      if (supabase) {
+        await supabase.from('SIPERKLIN').delete().eq('id', userId);
+      }
     }
   };
 
@@ -300,8 +258,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 text-gray-800 flex flex-col justify-between">
-      
-      {/* HEADER */}
       <header className="bg-white border-b border-emerald-100 shadow-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { if(!currentUser) setCurrentView('login'); }}>
@@ -337,10 +293,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* MAIN CONTAINER */}
       <main className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        
-        {/* LOGIN / REGISTER */}
         {currentView === 'login' && (
           <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-emerald-100">
             <div className="lg:col-span-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 p-8 sm:p-12 text-white flex flex-col justify-between">
@@ -420,7 +373,6 @@ export default function App() {
           </div>
         )}
 
-        {/* USER DASHBOARD (28 DOKUMEN) */}
         {currentView === 'user-dashboard' && currentUser && currentUser.role !== 'admin' && (
           <div className="w-full max-w-6xl space-y-6">
             <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -443,11 +395,10 @@ export default function App() {
               <div className="mb-6 flex justify-between items-center">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Daftar 28 Berkas Persyaratan Perizinan Klinik</h2>
-                  <p className="text-xs text-gray-500">Silakan unggah seluruh berkas PDF persyaratan di bawah ini untuk diverifikasi oleh Dinkes Badung.</p>
+                  <p className="text-xs text-gray-500">Silakan unggah seluruh berkas PDF persyaratan di bawah ini.</p>
                 </div>
               </div>
 
-              {/* GRID 28 DOKUMEN */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
                 {LIST_28_DOKUMEN.map((item) => {
                   const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
@@ -500,7 +451,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ADMIN DASHBOARD */}
         {currentView === 'admin-dashboard' && currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
             <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex justify-between items-center">
@@ -548,7 +498,6 @@ export default function App() {
                         </button>
                       </div>
 
-                      {/* 28 DOKUMEN REVIEW GRID DI ADMIN */}
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2">
                         {LIST_28_DOKUMEN.map((listItem) => {
                           const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
@@ -588,10 +537,8 @@ export default function App() {
             </div>
           </div>
         )}
-
       </main>
 
-      {/* PDF VIEWER MODAL */}
       {previewDoc && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-4xl w-full h-[85vh] p-6 shadow-2xl border border-emerald-100 flex flex-col justify-between">
@@ -631,13 +578,11 @@ export default function App() {
         </div>
       )}
 
-      {/* FOOTER */}
       <footer className="bg-white border-t border-emerald-100 py-6 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
           <p>© 2026 Dinas Kesehatan Kabupaten Badung. Seluruh hak cipta dilindungi.</p>
         </div>
       </footer>
-
     </div>
   );
 }
