@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
-// Inisialisasi koneksi Supabase
+// Inisialisasi koneksi Supabase menggunakan Environment Variables Vercel
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
@@ -73,53 +73,56 @@ export default function App() {
 
   const [users, setUsers] = useState([]);
 
-  // Refactoring fetchProfiles: Mengambil dan memetakan data dari API Supabase secara aman
+  // ==========================================
+  // REFACTORED: fetchProfiles menggunakan Supabase API
+  // ==========================================
   useEffect(() => {
     async function fetchProfiles() {
       if (!supabase) {
-        console.warn('Supabase belum terhubung. Menggunakan data lokal.');
+        console.warn('Klien Supabase belum terinisialisasi.');
         return;
       }
 
       try {
-        // Memanggil API Supabase untuk mengambil seluruh data dari tabel SIPERKLIN
+        // Memanggil API Supabase tabel SIPERKLIN
         const { data, error } = await supabase.from('SIPERKLIN').select('*');
 
         if (error) {
-          console.error('Gagal mengambil data dari Supabase:', error.message);
+          console.error('Kesalahan API Supabase:', error.message);
           return;
         }
 
         if (data && data.length > 0) {
-          // Mapping / penyesuaian nama kolom database ke state aplikasi React
+          // Memetakan data dari kolom database SQL ke state aplikasi React
           const formattedData = data.map(item => ({
             id: item.id,
             name: item.name,
             email: item.email,
             phone: item.phone,
-            clinicName: item.clinic_name, // Mengubah clinic_name (database) menjadi clinicName (aplikasi)
+            clinicName: item.clinic_name, // Mapping dari clinic_name (SQL) ke clinicName (React)
             password: item.password,
             status: item.status,
             documents: item.documents || generateInitialDocuments()
           }));
           setUsers(formattedData);
         } else {
-          // Jika tabel di Supabase masih kosong, masukkan data default panduan awal
-          const defaultUser = {
-            id: 'u1',
-            name: 'Dr. Made Surya, M.Kes',
-            email: 'surya@kliniksehat.com',
-            phone: '081234567890',
-            password: 'password123',
-            clinicName: 'Klinik Pratama Sehat Mandiri',
-            status: 'Sedang Diperiksa',
-            submissionDate: '2026-08-20',
-            documents: generateInitialDocuments()
-          };
-          setUsers([defaultUser]);
+          // Data default jika tabel di Supabase masih kosong
+          setUsers([
+            {
+              id: 'u1',
+              name: 'Dr. Made Surya, M.Kes',
+              email: 'surya@kliniksehat.com',
+              phone: '081234567890',
+              password: 'password123',
+              clinicName: 'Klinik Pratama Sehat Mandiri',
+              status: 'Sedang Diperiksa',
+              submissionDate: '2026-08-20',
+              documents: generateInitialDocuments()
+            }
+          ]);
         }
       } catch (err) {
-        console.error('Terjadi kesalahan tak terduga saat mengambil data:', err);
+        console.error('Gagal terhubung ke database:', err);
       }
     }
 
