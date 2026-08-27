@@ -12,7 +12,7 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 const LIST_28_DOKUMEN = [
-  { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
+  { key: 'dok_1', title: '1. Surat Permohonan Rekomendasi Klinik', desc: 'Surat permohonan resmi bermaterai' },
   { key: 'dok_2', title: '2. Profil Lengkap Klinik', desc: 'Visi, misi, struktur organisasi, & layanan' },
   { key: 'dok_3', title: '3. Akta Pendirian Badan Hukum/Usaha', desc: 'Akta notaris pendirian yayasan/PT/CV' },
   { key: 'dok_4', title: '4. Pengesahan Badan Hukum dari Kemenkumham', desc: 'Surat keputusan pengesahan resmi' },
@@ -374,7 +374,7 @@ export default function App() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
                   Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
                 </p>
@@ -419,11 +419,11 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pemohon</label>
-                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Dr. Nama & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="dr. Nama & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Klinik</label>
-                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama Satya" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
 
