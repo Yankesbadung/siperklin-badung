@@ -74,13 +74,13 @@ export default function App() {
   const [regClinicName, setRegClinicName] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
 
-  // Mengambil data dari database Supabase (tabel: SIPERKLIN) secara real-time
+  // Mengambil data dari database Supabase (tabel: profiles) secara real-time
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
     async function fetchProfiles() {
       if (!supabase) return;
-      const { data, error } = await supabase.from('SIPERKLIN').select('*');
+      const { data, error } = await supabase.from('profiles').select('*');
       if (data && data.length > 0) {
         const formatted = data.map(item => ({
           id: item.id,
@@ -143,7 +143,7 @@ export default function App() {
 
     // Kirim data ke tabel SIPERKLIN di Supabase
     if (supabase) {
-      const { error } = await supabase.from('SIPERKLIN').insert([
+      const { error } = await supabase.from('profiles').insert([
         {
           id: newId,
           name: regName,
@@ -187,7 +187,7 @@ export default function App() {
 
     // Perbarui data dokumen di Supabase
     if (supabase) {
-      await supabase.from('SIPERKLIN').update({
+      await supabase.from('profiles').update({
         documents: updatedDocs,
         status: 'Sedang Diperiksa'
       }).eq('id', currentUser.id);
