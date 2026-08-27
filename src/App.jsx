@@ -73,40 +73,25 @@ export default function App() {
 
   const [users, setUsers] = useState([]);
 
-  // ==========================================
-  // REFACTORED: fetchProfiles menggunakan Supabase API
-  // ==========================================
+  // Mengambil data dari Supabase
   useEffect(() => {
     async function fetchProfiles() {
-      if (!supabase) {
-        console.warn('Klien Supabase belum terinisialisasi.');
-        return;
-      }
-
+      if (!supabase) return;
       try {
-        // Memanggil API Supabase tabel SIPERKLIN
         const { data, error } = await supabase.from('SIPERKLIN').select('*');
-
-        if (error) {
-          console.error('Kesalahan API Supabase:', error.message);
-          return;
-        }
-
         if (data && data.length > 0) {
-          // Memetakan data dari kolom database SQL ke state aplikasi React
-          const formattedData = data.map(item => ({
+          const formatted = data.map(item => ({
             id: item.id,
             name: item.name,
             email: item.email,
             phone: item.phone,
-            clinicName: item.clinic_name, // Mapping dari clinic_name (SQL) ke clinicName (React)
+            clinicName: item.clinic_name,
             password: item.password,
             status: item.status,
             documents: item.documents || generateInitialDocuments()
           }));
-          setUsers(formattedData);
+          setUsers(formatted);
         } else {
-          // Data default jika tabel di Supabase masih kosong
           setUsers([
             {
               id: 'u1',
@@ -122,10 +107,9 @@ export default function App() {
           ]);
         }
       } catch (err) {
-        console.error('Gagal terhubung ke database:', err);
+        console.error('Error fetching profiles:', err);
       }
     }
-
     fetchProfiles();
   }, []);
 
@@ -205,11 +189,14 @@ export default function App() {
     setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
   };
 
+  // Fungsi Unggah Dokumen yang sudah diperbarui agar tersinkronisasi ke database
   const handleUploadDoc = async (docKey, file) => {
+    const fileName = file.name;
     const fileUrl = URL.createObjectURL(file);
+    
     const updatedDocs = {
       ...currentUser.documents,
-      [docKey]: { name: file.name, url: fileUrl, status: 'Menunggu Verifikasi', note: '' }
+      [docKey]: { name: fileName, url: fileUrl, status: 'Menunggu Verifikasi', note: '' }
     };
 
     const updatedUsers = users.map(u => {
@@ -223,13 +210,18 @@ export default function App() {
     setCurrentUser(updatedUsers.find(u => u.id === currentUser.id));
 
     if (supabase) {
-      await supabase.from('SIPERKLIN').update({
+      const { error } = await supabase.from('SIPERKLIN').update({
         documents: updatedDocs,
         status: 'Sedang Diperiksa'
       }).eq('id', currentUser.id);
+
+      if (error) {
+        alert('Gagal menyinkronkan dokumen ke database cloud: ' + error.message);
+        return;
+      }
     }
 
-    alert('Dokumen PDF berhasil diunggah!');
+    alert('Dokumen PDF berhasil diunggah dan disimpan ke database!');
   };
 
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
