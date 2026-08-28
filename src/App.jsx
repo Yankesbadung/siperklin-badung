@@ -51,7 +51,7 @@ const generateInitialDocuments = () => {
       url: '',
       status: index === 0 ? 'Sudah Terverifikasi' : 'Menunggu Verifikasi',
       note: '',
-      validatedAt: '-'
+      verifiedAt: index === 0 ? new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'
     };
   });
   return docs;
@@ -102,7 +102,7 @@ export default function App() {
           password: item.password,
           status: item.status || 'Menunggu Verifikasi',
           documents: item.documents || generateInitialDocuments(),
-          visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '', validatedAt: '-' }
+          visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '', verifiedAt: '-' }
         }));
         setUsers(formatted);
 
@@ -125,7 +125,6 @@ export default function App() {
     }
   };
 
-  // Hanya memuat data sekali saat halaman dibuka. Interval otomatis dihapus total untuk mencegah refresh sendiri.
   useEffect(() => {
     fetchProfiles();
   }, []);
@@ -179,7 +178,7 @@ export default function App() {
 
     const newId = 'u_' + Date.now();
     const newDocuments = generateInitialDocuments();
-    const newVisitRevision = { name: 'Belum diunggah', url: '', note: '', validatedAt: '-' };
+    const newVisitRevision = { name: 'Belum diunggah', url: '', note: '', verifiedAt: '-' };
 
     if (supabase) {
       const { error } = await supabase.from('SIPERKLIN').insert([
@@ -226,7 +225,7 @@ export default function App() {
           url: base64Url, 
           status: 'Menunggu Verifikasi', 
           note: '',
-          validatedAt: '-'
+          verifiedAt: '-'
         }
       };
 
@@ -262,7 +261,7 @@ export default function App() {
         url: base64Url,
         status: 'Menunggu Verifikasi Visitasi',
         note: '',
-        validatedAt: '-'
+        verifiedAt: '-'
       };
 
       if (supabase) {
@@ -282,12 +281,17 @@ export default function App() {
     };
   };
 
+  // Fungsi admin memperbarui status dokumen beserta pencatatan tanggal, bulan, dan tahun verifikasi
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
+    // Menghasilkan format tanggal, bulan, dan tahun saat ini (contoh: 28 Agustus 2026)
     const now = new Date();
     const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Jika status diubah menjadi terverifikasi atau catatan perbaikan, catat tanggal verifikasinya. Jika "Menunggu", kosongkan atau beri tanda "-"
+    const verificationTimestamp = (newStatus === 'Sudah Terverifikasi' || newStatus === 'Catatan Perbaikan') ? formattedDate : '-';
 
     const updatedDocs = {
       ...targetUser.documents,
@@ -295,7 +299,7 @@ export default function App() {
         ...targetUser.documents[docKey], 
         status: newStatus, 
         note: newNote,
-        validatedAt: formattedDate
+        verifiedAt: verificationTimestamp
       }
     };
 
@@ -552,7 +556,7 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
                 {LIST_28_DOKUMEN.map((item) => {
-                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', validatedAt: '-' };
+                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', verifiedAt: '-' };
                   return (
                     <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-300 transition">
                       <div>
@@ -579,9 +583,10 @@ export default function App() {
                           )}
                         </div>
 
+                        {/* Menampilkan Tanggal, Bulan, dan Tahun Verifikasi */}
                         <div className="flex items-center justify-between text-[10px] text-gray-500 bg-emerald-50/50 px-2.5 py-1.5 rounded-lg mb-2 border border-emerald-100">
-                          <span className="flex items-center space-x-1"><Calendar className="w-3 h-3 text-emerald-600" /><span>Validasi:</span></span>
-                          <span className="font-bold text-emerald-900">{docInfo.validatedAt || '-'}</span>
+                          <span className="flex items-center space-x-1"><Calendar className="w-3 h-3 text-emerald-600" /><span>Verifikasi:</span></span>
+                          <span className="font-bold text-emerald-900">{docInfo.verifiedAt || '-'}</span>
                         </div>
 
                         {docInfo.note && (
@@ -669,7 +674,7 @@ export default function App() {
 
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2">
                         {LIST_28_DOKUMEN.map((listItem) => {
-                          const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', validatedAt: '-' };
+                          const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', verifiedAt: '-' };
                           return (
                             <div key={listItem.key} className="bg-white rounded-xl p-3 border border-gray-200 flex flex-col justify-between">
                               <div>
@@ -686,9 +691,10 @@ export default function App() {
                                   <Eye className="w-3 h-3" /><span>Lihat File PDF</span>
                                 </button>
 
+                                {/* Menampilkan Tanggal, Bulan, dan Tahun Verifikasi di Panel Admin */}
                                 <div className="text-[10px] text-emerald-800 bg-emerald-50 p-1.5 rounded mb-2 border border-emerald-100 flex items-center space-x-1">
                                   <Calendar className="w-3 h-3 text-emerald-600 flex-shrink-0" />
-                                  <span className="truncate">Validasi: <strong>{docVal.validatedAt || '-'}</strong></span>
+                                  <span className="truncate">Verifikasi: <strong>{docVal.verifiedAt || '-'}</strong></span>
                                 </div>
 
                                 <div className="space-y-1.5 pt-2 border-t border-gray-100">
