@@ -86,9 +86,9 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchProfiles = async (isBackground = false) => {
+  const fetchProfiles = async () => {
     if (!supabase) return;
-    if (!isBackground) setIsRefreshing(true);
+    setIsRefreshing(true);
     try {
       const { data, error } = await supabase.from('SIPERKLIN').select('*');
       if (data) {
@@ -106,7 +106,6 @@ export default function App() {
         }));
         setUsers(formatted);
 
-        // Pertahankan sesi user aktif secara aman tanpa mereset status login
         const currentSaved = localStorage.getItem('siperklin_current_user');
         if (currentSaved) {
           const parsedUser = JSON.parse(currentSaved);
@@ -122,17 +121,13 @@ export default function App() {
     } catch (err) {
       console.error('Error fetching profiles:', err);
     } finally {
-      if (!isBackground) setIsRefreshing(false);
+      setIsRefreshing(false);
     }
   };
 
+  // Hanya memuat data sekali saat halaman dibuka. Interval otomatis dihapus total untuk mencegah refresh sendiri.
   useEffect(() => {
     fetchProfiles();
-    // Diperlama menjadi 15 detik sekali agar browser dan koneksi stabil (tidak keluar-masuk)
-    const interval = setInterval(() => {
-      fetchProfiles(true);
-    }, 15000);
-    return () => clearInterval(interval);
   }, []);
 
   const [previewDoc, setPreviewDoc] = useState(null);
@@ -382,7 +377,7 @@ export default function App() {
 
           <div className="flex items-center space-x-3">
             {currentUser && (
-              <button onClick={() => fetchProfiles(false)} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200">
+              <button onClick={() => fetchProfiles()} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200">
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span>{isRefreshing ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
               </button>
