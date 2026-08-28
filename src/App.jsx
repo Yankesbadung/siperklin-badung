@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet 
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar 
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
@@ -50,7 +50,8 @@ const generateInitialDocuments = () => {
       name: index === 0 ? 'Surat_Permohonan_Operasional.pdf' : 'Belum diunggah',
       url: '',
       status: index === 0 ? 'Sudah Terverifikasi' : 'Menunggu Verifikasi',
-      note: ''
+      note: '',
+      validatedAt: '-'
     };
   });
   return docs;
@@ -101,7 +102,7 @@ export default function App() {
           password: item.password,
           status: item.status || 'Menunggu Verifikasi',
           documents: item.documents || generateInitialDocuments(),
-          visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '' }
+          visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '', validatedAt: '-' }
         }));
         setUsers(formatted);
 
@@ -177,7 +178,7 @@ export default function App() {
 
     const newId = 'u_' + Date.now();
     const newDocuments = generateInitialDocuments();
-    const newVisitRevision = { name: 'Belum diunggah', url: '', note: '' };
+    const newVisitRevision = { name: 'Belum diunggah', url: '', note: '', validatedAt: '-' };
 
     if (supabase) {
       const { error } = await supabase.from('SIPERKLIN').insert([
@@ -223,7 +224,8 @@ export default function App() {
           name: file.name, 
           url: base64Url, 
           status: 'Menunggu Verifikasi', 
-          note: '' 
+          note: '',
+          validatedAt: '-'
         }
       };
 
@@ -258,7 +260,8 @@ export default function App() {
         name: file.name,
         url: base64Url,
         status: 'Menunggu Verifikasi Visitasi',
-        note: ''
+        note: '',
+        validatedAt: '-'
       };
 
       if (supabase) {
@@ -282,9 +285,18 @@ export default function App() {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
+    // Mendapatkan tanggal, bulan, dan tahun saat admin melakukan validasi
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
     const updatedDocs = {
       ...targetUser.documents,
-      [docKey]: { ...targetUser.documents[docKey], status: newStatus, note: newNote }
+      [docKey]: { 
+        ...targetUser.documents[docKey], 
+        status: newStatus, 
+        note: newNote,
+        validatedAt: formattedDate // Tercatat Tanggal, Bulan, dan Tahun
+      }
     };
 
     const statuses = Object.values(updatedDocs).map(d => d.status);
@@ -314,7 +326,6 @@ export default function App() {
     }
   };
 
-  // Fungsi untuk mengunduh rekapitulasi data ke Excel
   const handleExportExcel = () => {
     if (users.length === 0) {
       alert('Tidak ada data rekapitulasi untuk diunduh.');
@@ -541,7 +552,7 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
                 {LIST_28_DOKUMEN.map((item) => {
-                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
+                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', validatedAt: '-' };
                   return (
                     <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-300 transition">
                       <div>
@@ -566,6 +577,11 @@ export default function App() {
                               <Eye className="w-3 h-3" /><span>Lihat</span>
                             </button>
                           )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] text-gray-500 bg-emerald-50/50 px-2.5 py-1.5 rounded-lg mb-2 border border-emerald-100">
+                          <span className="flex items-center space-x-1"><Calendar className="w-3 h-3 text-emerald-600" /><span>Validasi:</span></span>
+                          <span className="font-bold text-emerald-900">{docInfo.validatedAt || '-'}</span>
                         </div>
 
                         {docInfo.note && (
@@ -653,7 +669,7 @@ export default function App() {
 
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2">
                         {LIST_28_DOKUMEN.map((listItem) => {
-                          const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
+                          const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', validatedAt: '-' };
                           return (
                             <div key={listItem.key} className="bg-white rounded-xl p-3 border border-gray-200 flex flex-col justify-between">
                               <div>
@@ -669,6 +685,11 @@ export default function App() {
                                 <button onClick={() => setPreviewDoc({ title: listItem.title, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: u.clinicName })} className="text-[10px] text-emerald-700 font-bold hover:underline flex items-center space-x-1 mb-2">
                                   <Eye className="w-3 h-3" /><span>Lihat File PDF</span>
                                 </button>
+
+                                <div className="text-[10px] text-emerald-800 bg-emerald-50 p-1.5 rounded mb-2 border border-emerald-100 flex items-center space-x-1">
+                                  <Calendar className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                                  <span className="truncate">Validasi: <strong>{docVal.validatedAt || '-'}</strong></span>
+                                </div>
 
                                 <div className="space-y-1.5 pt-2 border-t border-gray-100">
                                   <select value={docVal.status} onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, e.target.value, docVal.note)} className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1">
