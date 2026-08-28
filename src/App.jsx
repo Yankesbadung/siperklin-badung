@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet 
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar 
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
@@ -50,7 +50,8 @@ const generateInitialDocuments = () => {
       name: index === 0 ? 'Surat_Permohonan_Operasional.pdf' : 'Belum diunggah',
       url: '',
       status: index === 0 ? 'Sudah Terverifikasi' : 'Menunggu Verifikasi',
-      note: ''
+      note: '',
+      verifiedAt: index === 0 ? new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'
     };
   });
   return docs;
@@ -85,9 +86,9 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchProfiles = async (isBackground = false) => {
+  const fetchProfiles = async () => {
     if (!supabase) return;
-    if (!isBackground) setIsRefreshing(true);
+    setIsRefreshing(true);
     try {
       const { data, error } = await supabase.from('SIPERKLIN').select('*');
       if (data) {
@@ -101,31 +102,19 @@ export default function App() {
           password: item.password,
           status: item.status || 'Menunggu Verifikasi',
           documents: item.documents || generateInitialDocuments(),
-          visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '' }
+          visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '', verifiedAt: '-' }
         }));
         setUsers(formatted);
-
-        if (currentUser && currentUser.role !== 'admin') {
-          const latestSelf = formatted.find(u => u.id === currentUser.id);
-          if (latestSelf) {
-            setCurrentUser(latestSelf);
-            localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
-          }
-        }
       }
     } catch (err) {
       console.error('Error fetching profiles:', err);
     } finally {
-      if (!isBackground) setIsRefreshing(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchProfiles();
-    const interval = setInterval(() => {
-      fetchProfiles(true);
-    }, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   const [previewDoc, setPreviewDoc] = useState(null);
@@ -177,7 +166,7 @@ export default function App() {
 
     const newId = 'u_' + Date.now();
     const newDocuments = generateInitialDocuments();
-    const newVisitRevision = { name: 'Belum diunggah', url: '', note: '' };
+    const newVisitRevision = { name: 'Belum diunggah', url: '', note: '', verifiedAt: '-' };
 
     if (supabase) {
       const { error } = await supabase.from('SIPERKLIN').insert([
@@ -223,7 +212,8 @@ export default function App() {
           name: file.name, 
           url: base64Url, 
           status: 'Menunggu Verifikasi', 
-          note: '' 
+          note: '',
+          verifiedAt: '-'
         }
       };
 
@@ -258,7 +248,8 @@ export default function App() {
         name: file.name,
         url: base64Url,
         status: 'Menunggu Verifikasi Visitasi',
-        note: ''
+        note: '',
+        verifiedAt: '-'
       };
 
       if (supabase) {
@@ -278,13 +269,42 @@ export default function App() {
     };
   };
 
+  // Fungsi lokal untuk mengubah state di layar secara instan tanpa lag saat admin mengetik
+  const handleLocalNoteChange = (userId, docKey, text) => {
+    setUsers(prevUsers => prevUsers.map(u => {
+      if (u.id === userId) {
+        return {
+          ...u,
+          documents: {
+            ...u.documents,
+            [docKey]: {
+              ...u.documents[docKey],
+              note: text
+            }
+          }
+        };
+      }
+      return u;
+    }));
+  };
+
+  // Fungsi admin menyimpan perubahan ke database (dipanggil saat dropdown status diganti atau tombol simpan diklik)
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const verificationTimestamp = (newStatus === 'Sudah Terverifikasi' || newStatus === 'Catatan Perbaikan') ? formattedDate : '-';
+
     const updatedDocs = {
       ...targetUser.documents,
-      [docKey]: { ...targetUser.documents[docKey], status: newStatus, note: newNote }
+      [docKey]: { 
+        ...targetUser.documents[docKey], 
+        status: newStatus, 
+        note: newNote,
+        verifiedAt: verificationTimestamp
+      }
     };
 
     const statuses = Object.values(updatedDocs).map(d => d.status);
@@ -295,13 +315,15 @@ export default function App() {
       overallStatus = 'Catatan Perbaikan';
     }
 
+    // Perbarui state lokal segera
+    setUsers(prevUsers => prevUsers.map(u => u.id === userId ? { ...u, documents: updatedDocs, status: overallStatus } : u));
+
+    // Kirim ke database Supabase secara aman di latar belakang
     if (supabase) {
       await supabase.from('SIPERKLIN').update({
         documents: updatedDocs,
         status: overallStatus
       }).eq('id', userId);
-
-      fetchProfiles();
     }
   };
 
@@ -314,7 +336,6 @@ export default function App() {
     }
   };
 
-  // Fungsi untuk mengunduh rekapitulasi data ke Excel
   const handleExportExcel = () => {
     if (users.length === 0) {
       alert('Tidak ada data rekapitulasi untuk diunduh.');
@@ -366,7 +387,7 @@ export default function App() {
 
           <div className="flex items-center space-x-3">
             {currentUser && (
-              <button onClick={() => fetchProfiles(false)} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200">
+              <button onClick={() => fetchProfiles()} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200">
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span>{isRefreshing ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
               </button>
@@ -541,7 +562,7 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
                 {LIST_28_DOKUMEN.map((item) => {
-                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
+                  const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', verifiedAt: '-' };
                   return (
                     <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-300 transition">
                       <div>
@@ -566,6 +587,11 @@ export default function App() {
                               <Eye className="w-3 h-3" /><span>Lihat</span>
                             </button>
                           )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] text-gray-500 bg-emerald-50/50 px-2.5 py-1.5 rounded-lg mb-2 border border-emerald-100">
+                          <span className="flex items-center space-x-1"><Calendar className="w-3 h-3 text-emerald-600" /><span>Verifikasi:</span></span>
+                          <span className="font-bold text-emerald-900">{docInfo.verifiedAt || '-'}</span>
                         </div>
 
                         {docInfo.note && (
@@ -653,7 +679,7 @@ export default function App() {
 
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto pr-2">
                         {LIST_28_DOKUMEN.map((listItem) => {
-                          const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '' };
+                          const docVal = u.documents[listItem.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', verifiedAt: '-' };
                           return (
                             <div key={listItem.key} className="bg-white rounded-xl p-3 border border-gray-200 flex flex-col justify-between">
                               <div>
@@ -670,13 +696,32 @@ export default function App() {
                                   <Eye className="w-3 h-3" /><span>Lihat File PDF</span>
                                 </button>
 
+                                <div className="text-[10px] text-emerald-800 bg-emerald-50 p-1.5 rounded mb-2 border border-emerald-100 flex items-center space-x-1">
+                                  <Calendar className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                                  <span className="truncate">Verifikasi: <strong>{docVal.verifiedAt || '-'}</strong></span>
+                                </div>
+
                                 <div className="space-y-1.5 pt-2 border-t border-gray-100">
-                                  <select value={docVal.status} onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, e.target.value, docVal.note)} className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1">
+                                  {/* Dropdown status memperbarui database saat dipilih */}
+                                  <select 
+                                    value={docVal.status} 
+                                    onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, e.target.value, docVal.note)} 
+                                    className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1"
+                                  >
                                     <option value="Menunggu Verifikasi">Menunggu</option>
                                     <option value="Sudah Terverifikasi">Terverifikasi</option>
                                     <option value="Catatan Perbaikan">Perbaikan</option>
                                   </select>
-                                  <input type="text" placeholder="Catatan..." value={docVal.note} onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, docVal.status, e.target.value)} className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1" />
+
+                                  {/* Input catatan diketik secara lokal tanpa nge-lag, baru disimpan saat klik di luar atau ganti status */}
+                                  <input 
+                                    type="text" 
+                                    placeholder="Tulis catatan..." 
+                                    value={docVal.note} 
+                                    onChange={(e) => handleLocalNoteChange(u.id, listItem.key, e.target.value)}
+                                    onBlur={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, docVal.status, e.target.value)}
+                                    className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1 focus:bg-white focus:ring-1 focus:ring-emerald-500" 
+                                  />
                                 </div>
                               </div>
                             </div>
