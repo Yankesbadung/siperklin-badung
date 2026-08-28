@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Building2, FileText, CheckCircle2, Clock, AlertCircle,
+  Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar 
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar, Check 
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
@@ -57,8 +57,8 @@ const generateInitialDocuments = () => {
   return docs;
 };
 
-// Komponen Input Catatan Terisolasi agar Admin Mengetik Tanpa Lag
-function NoteInput({ initialNote, onSave }) {
+// Komponen Input Catatan Mandiri dengan Tombol Simpan (Bebas Lag Total)
+function NoteInputWithButton({ initialNote, onSaveNote }) {
   const [text, setText] = useState(initialNote || '');
 
   useEffect(() => {
@@ -66,18 +66,23 @@ function NoteInput({ initialNote, onSave }) {
   }, [initialNote]);
 
   return (
-    <input 
-      type="text" 
-      placeholder="Tulis catatan..." 
-      value={text} 
-      onChange={(e) => setText(e.target.value)}
-      onBlur={() => {
-        if (text !== initialNote) {
-          onSave(text);
-        }
-      }}
-      className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1 focus:bg-white focus:ring-1 focus:ring-emerald-500" 
-    />
+    <div className="flex space-x-1 mt-1">
+      <input 
+        type="text" 
+        placeholder="Tulis catatan perbaikan..." 
+        value={text} 
+        onChange={(e) => setText(e.target.value)}
+        className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1 focus:bg-white focus:ring-1 focus:ring-emerald-500" 
+      />
+      <button 
+        type="button" 
+        onClick={() => onSaveNote(text)}
+        title="Simpan Catatan"
+        className="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-[10px] font-bold flex items-center justify-center shadow-sm"
+      >
+        <Check className="w-3 h-3" />
+      </button>
+    </div>
   );
 }
 
@@ -110,12 +115,19 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Fungsi sinkronisasi data yang diperkuat agar tombol berfungsi optimal
   const fetchProfiles = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      alert('Koneksi Supabase belum terkonfigurasi dengan benar.');
+      return;
+    }
     setIsRefreshing(true);
     try {
       const { data, error } = await supabase.from('SIPERKLIN').select('*');
-      if (data) {
+      if (error) {
+        console.error('Supabase error:', error.message);
+        alert('Gagal menyinkronkan data: ' + error.message);
+      } else if (data) {
         const formatted = data.map(item => ({
           id: item.id,
           name: item.name,
@@ -129,6 +141,19 @@ export default function App() {
           visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '', verifiedAt: '-' }
         }));
         setUsers(formatted);
+
+        // Jika user aktif, perbarui datanya secara *real-time*
+        const currentSaved = localStorage.getItem('siperklin_current_user');
+        if (currentSaved) {
+          const parsedUser = JSON.parse(currentSaved);
+          if (parsedUser.role !== 'admin') {
+            const latestSelf = formatted.find(u => u.id === parsedUser.id);
+            if (latestSelf) {
+              setCurrentUser(latestSelf);
+              localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
+            }
+          }
+        }
       }
     } catch (err) {
       console.error('Error fetching profiles:', err);
@@ -293,7 +318,6 @@ export default function App() {
     };
   };
 
-  // Fungsi admin memperbarui status dokumen beserta pencatatan tanggal verifikasi
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
@@ -323,11 +347,17 @@ export default function App() {
     setUsers(prevUsers => prevUsers.map(u => u.id === userId ? { ...u, documents: updatedDocs, status: overallStatus } : u));
 
     if (supabase) {
-      await supabase.from('SIPERKLIN').update({
+      const { error } = await supabase.from('SIPERKLIN').update({
         documents: updatedDocs,
         status: overallStatus
       }).eq('id', userId);
+
+      if (error) {
+        alert('Gagal memperbarui ke database: ' + error.message);
+        return;
+      }
     }
+    alert('Perubahan status & tanggal verifikasi berhasil disimpan!');
   };
 
   const handleDeleteUser = async (userId) => {
@@ -390,7 +420,7 @@ export default function App() {
 
           <div className="flex items-center space-x-3">
             {currentUser && (
-              <button onClick={() => fetchProfiles()} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200">
+              <button onClick={() => fetchProfiles()} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200 cursor-pointer">
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span>{isRefreshing ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
               </button>
@@ -425,7 +455,7 @@ export default function App() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
                   Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
                 </p>
@@ -715,10 +745,9 @@ export default function App() {
                                     <option value="Catatan Perbaikan">Perbaikan</option>
                                   </select>
 
-                                  {/* Menggunakan NoteInput terisolasi agar admin mengetik dengan sangat lancar tanpa sinkronisasi */}
-                                  <NoteInput 
+                                  <NoteInputWithButton 
                                     initialNote={docVal.note} 
-                                    onSave={(val) => handleAdminUpdateDocStatus(u.id, listItem.key, docVal.status, val)} 
+                                    onSaveNote={(text) => handleAdminUpdateDocStatus(u.id, listItem.key, docVal.status, text)} 
                                   />
                                 </div>
                               </div>
