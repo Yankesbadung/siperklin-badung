@@ -106,11 +106,16 @@ export default function App() {
         }));
         setUsers(formatted);
 
-        if (currentUser && currentUser.role !== 'admin') {
-          const latestSelf = formatted.find(u => u.id === currentUser.id);
-          if (latestSelf) {
-            setCurrentUser(latestSelf);
-            localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
+        // Pertahankan sesi user aktif secara aman tanpa mereset status login
+        const currentSaved = localStorage.getItem('siperklin_current_user');
+        if (currentSaved) {
+          const parsedUser = JSON.parse(currentSaved);
+          if (parsedUser.role !== 'admin') {
+            const latestSelf = formatted.find(u => u.id === parsedUser.id);
+            if (latestSelf) {
+              setCurrentUser(latestSelf);
+              localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
+            }
           }
         }
       }
@@ -123,9 +128,10 @@ export default function App() {
 
   useEffect(() => {
     fetchProfiles();
+    // Diperlama menjadi 15 detik sekali agar browser dan koneksi stabil (tidak keluar-masuk)
     const interval = setInterval(() => {
       fetchProfiles(true);
-    }, 5000);
+    }, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -285,7 +291,6 @@ export default function App() {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    // Mendapatkan tanggal, bulan, dan tahun saat admin melakukan validasi
     const now = new Date();
     const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -295,7 +300,7 @@ export default function App() {
         ...targetUser.documents[docKey], 
         status: newStatus, 
         note: newNote,
-        validatedAt: formattedDate // Tercatat Tanggal, Bulan, dan Tahun
+        validatedAt: formattedDate
       }
     };
 
