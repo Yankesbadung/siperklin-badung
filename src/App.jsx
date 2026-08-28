@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet 
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle 
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import * as XLSX from 'xlsx';
 
 // Inisialisasi koneksi Supabase menggunakan Environment Variables Vercel
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -13,17 +12,17 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 const LIST_28_DOKUMEN = [
-  { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
-  { key: 'dok_2', title: '2. Profil Lengkap Klinik', desc: 'Visi, misi, struktur organisasi, & layanan' },
-  { key: 'dok_3', title: '3. Akta Pendirian Badan Hukum/Usaha', desc: 'Akta notaris pendirian yayasan/PT/CV' },
-  { key: 'dok_4', title: '4. Pengesahan Badan Hukum dari Kemenkumham', desc: 'Surat keputusan pengesahan resmi' },
+  { key: 'dok_1', title: '1. Surat Permohonan Rekomendasi Klinik', desc: 'Surat permohonan resmi bermaterai' },
+  { key: 'dok_2', title: '2. Foto SLF / PBG', desc: 'Foto SLF / PBG terbit' },
+  { key: 'dok_3', title: '3. Foto NIB', desc: 'Foto NIB (Nomor Induk Berusaha' },
+  { key: 'dok_4', title: '4. Salinan / Foto Copy Legalitas Pelaku Usaha', desc: 'Foto Akte Notaris Pendirian Badan Hukum' },
   { key: 'dok_5', title: '5. Bukti Kepemilikan / Penguasaan Tanah & Gedung', desc: 'Sertifikat tanah / Akta sewa bangunan minimal 5 tahun' },
-  { key: 'dok_6', title: '6. Izin Mendirikan Bangunan (IMB) / PBG', desc: 'Persetujuan Bangunan Gedung sesuai peruntukan' },
-  { key: 'dok_7', title: '7. Surat Layanan / Kelaikan Fungsi Gedung (SLF)', desc: 'Sertifikat kelaikan fungsi bangunan' },
-  { key: 'dok_8', title: '8. Surat Izin Praktik (SIP) Dokter Penanggung Jawab', desc: 'SIP dokter penanggung jawab klinik' },
-  { key: 'dok_9', title: '9. Daftar Seluruh Tenaga Medis & Paramedis', desc: 'Daftar nama lengkap beserta kualifikasi' },
-  { key: 'dok_10', title: '10. Salinan SIP Dokter & Tenaga Kesehatan Lainnya', desc: 'Kumpulan SIP seluruh nakes yang bertugas' },
-  { key: 'dok_11', title: '11. Surat Perjanjian Kerja Sama (PKS) Tenaga Medis', desc: 'Kontrak kerja tenaga kesehatan' },
+  { key: 'dok_6', title: '6. Dokumen UKL / UPL, SPPL', desc: 'Dokumen Pengelolaan dan Pemantauan Lingkungan Hidup' },
+  { key: 'dok_7', title: '7. Daftar Obat dan Bahan Medis Habis Pakai', desc: 'Daftar Obat dan BHP' },
+  { key: 'dok_8', title: '8. Dokumen Profil Klinik', desc: 'Profil Lengkap Klinik' },
+  { key: 'dok_9', title: '9. Daftar SDM', desc: 'Daftar SDM Sesuai ketentuan' },
+  { key: 'dok_10', title: '10. Dokumen Kalibrasi', desc: 'Dokumen Kalibrasi Alkes' },
+  { key: 'dok_11', title: '11. Dokumen Self Assessment Klinik', desc: 'Dokumen Self Assessment Klinik Lengkap' },
   { key: 'dok_12', title: '12. Surat Pernyataan Sanggup Mematuhi Peraturan', desc: 'Surat pernyataan bermaterai' },
   { key: 'dok_13', title: '13. Denah Ruangan / Layout Klinik (Blueprint)', desc: 'Denah bangunan ukuran jelas per ruangan' },
   { key: 'dok_14', title: '14. Dokumen Upaya Pengelolaan & Pemantauan Lingkungan', desc: 'Izin lingkungan hidup (UKL-UPL/SPPL)' },
@@ -85,6 +84,7 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Fungsi mengambil data dari Supabase
   const fetchProfiles = async (isBackground = false) => {
     if (!supabase) return;
     if (!isBackground) setIsRefreshing(true);
@@ -120,6 +120,7 @@ export default function App() {
     }
   };
 
+  // Sinkronisasi otomatis setiap 5 detik
   useEffect(() => {
     fetchProfiles();
     const interval = setInterval(() => {
@@ -314,34 +315,6 @@ export default function App() {
     }
   };
 
-  // Fungsi untuk mengunduh rekapitulasi data ke Excel
-  const handleExportExcel = () => {
-    if (users.length === 0) {
-      alert('Tidak ada data rekapitulasi untuk diunduh.');
-      return;
-    }
-
-    const dataToExport = users.map((u, index) => {
-      const totalUploaded = Object.values(u.documents || {}).filter(d => d.name !== 'Belum diunggah').length;
-      return {
-        No: index + 1,
-        'Nama Klinik': u.clinicName,
-        'Jenis Klinik': u.clinicType || 'Klinik Pratama',
-        'Penanggung Jawab': u.name,
-        'Email': u.email,
-        'No. WhatsApp': u.phone,
-        'Status Pengajuan': u.status,
-        'Dokumen Terunggah (Dari 28)': `${totalUploaded} / 28 Dokumen`,
-        'Berkas Perbaikan Visitasi': u.visitRevision?.name && u.visitRevision.name !== 'Belum diunggah' ? u.visitRevision.name : 'Belum Ada'
-      };
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Rekap Pengajuan Klinik');
-    XLSX.writeFile(workbook, `Rekap_Pengajuan_SIPERKLIN_${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
   const totalPengajuan = users.length;
   const sedangDiperiksaCount = users.filter(u => u.status !== 'Sudah Terverifikasi').length;
   const sudahTerverifikasiCount = users.filter(u => u.status === 'Sudah Terverifikasi').length;
@@ -401,9 +374,9 @@ export default function App() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
-                  Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
+                  Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap dokumen resmi.
                 </p>
               </div>
               <div className="pt-6 border-t border-emerald-700/60 text-xs text-emerald-200">
@@ -423,7 +396,7 @@ export default function App() {
                   {loginError && <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl flex items-center space-x-2"><AlertCircle className="w-4 h-4 flex-shrink-0" /><span>{loginError}</span></div>}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Username / Email / No. Telp</label>
-                    <input type="text" required value={loginInput} onChange={(e) => setLoginInput(e.target.value)} placeholder="yankesbadung / 081234567890" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    <input type="text" required value={loginInput} onChange={(e) => setLoginInput(e.target.value)} placeholder="kliniksatya@gmail.com / 081234567890" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Password</label>
@@ -433,7 +406,7 @@ export default function App() {
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
-                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700">Pelayanankesehatan1</code></p>
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">Yankes Badung</code>  <code className="bg-white px-1 font-bold text-emerald-700"></code></p>
                   </div>
                 </form>
               )}
@@ -446,11 +419,11 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pemohon</label>
-                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Dr. Nama & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="dr. Nama & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Klinik</label>
-                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama Satya" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
 
@@ -593,16 +566,12 @@ export default function App() {
 
         {currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
-            <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex justify-between items-center">
               <div>
                 <span className="bg-emerald-800 text-emerald-200 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-700">Panel Administrator</span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Verifikasi Dokumen & Perbaikan Visitasi Klinik</h1>
                 <p className="text-gray-300 text-xs mt-1">Dinas Kesehatan Kabupaten Badung • {currentDateFormatted}</p>
               </div>
-              <button onClick={handleExportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl font-bold text-xs shadow-lg transition flex items-center space-x-2 border border-emerald-500">
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Unduh Rekap Excel (.xlsx)</span>
-              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
