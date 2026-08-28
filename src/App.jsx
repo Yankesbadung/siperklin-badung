@@ -105,18 +105,6 @@ export default function App() {
           visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', note: '', verifiedAt: '-' }
         }));
         setUsers(formatted);
-
-        const currentSaved = localStorage.getItem('siperklin_current_user');
-        if (currentSaved) {
-          const parsedUser = JSON.parse(currentSaved);
-          if (parsedUser.role !== 'admin') {
-            const latestSelf = formatted.find(u => u.id === parsedUser.id);
-            if (latestSelf) {
-              setCurrentUser(latestSelf);
-              localStorage.setItem('siperklin_current_user', JSON.stringify(latestSelf));
-            }
-          }
-        }
       }
     } catch (err) {
       console.error('Error fetching profiles:', err);
@@ -281,16 +269,32 @@ export default function App() {
     };
   };
 
-  // Fungsi admin memperbarui status dokumen beserta pencatatan tanggal, bulan, dan tahun verifikasi
+  // Fungsi lokal untuk mengubah state di layar secara instan tanpa lag saat admin mengetik
+  const handleLocalNoteChange = (userId, docKey, text) => {
+    setUsers(prevUsers => prevUsers.map(u => {
+      if (u.id === userId) {
+        return {
+          ...u,
+          documents: {
+            ...u.documents,
+            [docKey]: {
+              ...u.documents[docKey],
+              note: text
+            }
+          }
+        };
+      }
+      return u;
+    }));
+  };
+
+  // Fungsi admin menyimpan perubahan ke database (dipanggil saat dropdown status diganti atau tombol simpan diklik)
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    // Menghasilkan format tanggal, bulan, dan tahun saat ini (contoh: 28 Agustus 2026)
     const now = new Date();
     const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    // Jika status diubah menjadi terverifikasi atau catatan perbaikan, catat tanggal verifikasinya. Jika "Menunggu", kosongkan atau beri tanda "-"
     const verificationTimestamp = (newStatus === 'Sudah Terverifikasi' || newStatus === 'Catatan Perbaikan') ? formattedDate : '-';
 
     const updatedDocs = {
@@ -311,13 +315,15 @@ export default function App() {
       overallStatus = 'Catatan Perbaikan';
     }
 
+    // Perbarui state lokal segera
+    setUsers(prevUsers => prevUsers.map(u => u.id === userId ? { ...u, documents: updatedDocs, status: overallStatus } : u));
+
+    // Kirim ke database Supabase secara aman di latar belakang
     if (supabase) {
       await supabase.from('SIPERKLIN').update({
         documents: updatedDocs,
         status: overallStatus
       }).eq('id', userId);
-
-      fetchProfiles();
     }
   };
 
@@ -583,7 +589,6 @@ export default function App() {
                           )}
                         </div>
 
-                        {/* Menampilkan Tanggal, Bulan, dan Tahun Verifikasi */}
                         <div className="flex items-center justify-between text-[10px] text-gray-500 bg-emerald-50/50 px-2.5 py-1.5 rounded-lg mb-2 border border-emerald-100">
                           <span className="flex items-center space-x-1"><Calendar className="w-3 h-3 text-emerald-600" /><span>Verifikasi:</span></span>
                           <span className="font-bold text-emerald-900">{docInfo.verifiedAt || '-'}</span>
@@ -691,19 +696,32 @@ export default function App() {
                                   <Eye className="w-3 h-3" /><span>Lihat File PDF</span>
                                 </button>
 
-                                {/* Menampilkan Tanggal, Bulan, dan Tahun Verifikasi di Panel Admin */}
                                 <div className="text-[10px] text-emerald-800 bg-emerald-50 p-1.5 rounded mb-2 border border-emerald-100 flex items-center space-x-1">
                                   <Calendar className="w-3 h-3 text-emerald-600 flex-shrink-0" />
                                   <span className="truncate">Verifikasi: <strong>{docVal.verifiedAt || '-'}</strong></span>
                                 </div>
 
                                 <div className="space-y-1.5 pt-2 border-t border-gray-100">
-                                  <select value={docVal.status} onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, e.target.value, docVal.note)} className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1">
+                                  {/* Dropdown status memperbarui database saat dipilih */}
+                                  <select 
+                                    value={docVal.status} 
+                                    onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, e.target.value, docVal.note)} 
+                                    className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1"
+                                  >
                                     <option value="Menunggu Verifikasi">Menunggu</option>
                                     <option value="Sudah Terverifikasi">Terverifikasi</option>
                                     <option value="Catatan Perbaikan">Perbaikan</option>
                                   </select>
-                                  <input type="text" placeholder="Catatan..." value={docVal.note} onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, docVal.status, e.target.value)} className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1" />
+
+                                  {/* Input catatan diketik secara lokal tanpa nge-lag, baru disimpan saat klik di luar atau ganti status */}
+                                  <input 
+                                    type="text" 
+                                    placeholder="Tulis catatan..." 
+                                    value={docVal.note} 
+                                    onChange={(e) => handleLocalNoteChange(u.id, listItem.key, e.target.value)}
+                                    onBlur={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, docVal.status, e.target.value)}
+                                    className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1 focus:bg-white focus:ring-1 focus:ring-emerald-500" 
+                                  />
                                 </div>
                               </div>
                             </div>
