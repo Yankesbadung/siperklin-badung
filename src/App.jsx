@@ -376,7 +376,7 @@ export default function App() {
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
-                  Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
+                  Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap dokumen resmi.
                 </p>
               </div>
               <div className="pt-6 border-t border-emerald-700/60 text-xs text-emerald-200">
