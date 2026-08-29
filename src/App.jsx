@@ -13,34 +13,34 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 const LIST_28_DOKUMEN = [
-  { key: 'dok_1', title: '1. Surat Permohonan Rekomendasi Klinik', desc: 'Surat permohonan resmi bermaterai' },
-  { key: 'dok_2', title: '2. Foto SLF / PBG', desc: 'Foto SLF / PBG terbit' },
-  { key: 'dok_3', title: '3. Foto NIB', desc: 'Foto NIB (Nomor Induk Berusaha)' },
-  { key: 'dok_4', title: '4. Salinan / Foto Copy Legalitas Pelaku Usaha', desc: 'Foto Akte Notaris Pendirian Badan Hukum' },
+  { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
+  { key: 'dok_2', title: '2. Profil Lengkap Klinik', desc: 'Visi, misi, struktur organisasi, & layanan' },
+  { key: 'dok_3', title: '3. Akta Pendirian Badan Hukum/Usaha', desc: 'Akta notaris pendirian yayasan/PT/CV' },
+  { key: 'dok_4', title: '4. Pengesahan Badan Hukum dari Kemenkumham', desc: 'Surat keputusan pengesahan resmi' },
   { key: 'dok_5', title: '5. Bukti Kepemilikan / Penguasaan Tanah & Gedung', desc: 'Sertifikat tanah / Akta sewa bangunan minimal 5 tahun' },
-  { key: 'dok_6', title: '6. Dokumen UKL / UPL, SPPL', desc: 'Dokumen Pengelolaan dan Pemantauan Lingkungan Hidup' },
-  { key: 'dok_7', title: '7. Daftar Obat dan BHP', desc: 'Daftar Obat dan Barang Habis Pakai' },
-  { key: 'dok_8', title: '8. Dokumen Profil Klinik', desc: 'Profil Klinik Lengkap' },
-  { key: 'dok_9', title: '9. Daftar SDM', desc: 'Daftar Nama SDM Sesuai Ketentuan' },
-  { key: 'dok_10', title: '10. Dokumen Kalibrasi', desc: 'Dokumen Kalibrasi Alkes' },
-  { key: 'dok_11', title: '11. Dokumen Self Assessment Klinik', desc: 'Dokumen Self Assessment Klinik Lengkap' },
-  { key: 'dok_12', title: '12. MOU Limbah Medis B3', desc: 'Dokumen Perjanjian Kerja Sama' },
-  { key: 'dok_13', title: '13. Denah Ruangan', desc: 'Gambar Denah Ruangan Jelas Beserta Ukurannya' },
-  { key: 'dok_14', title: '14. Instalasi Kelistrikan', desc: 'Gambar Instalasi Jaringan Kelistrikan' },
-  { key: 'dok_15', title: '15. Foto Copy Dokumen Genset', desc: 'Foto Copy Dokumen Genset' },
-  { key: 'dok_16', title: '16. Penangung Jawab Klinik', desc: 'Foto KTP, SK Pengajuan Sebagai Penanggung Jawab, Surat Pernyataan Kesanggupan, Foto SKCK, FOTO STR dan SIP' },
-  { key: 'dok_17', title: '17. Dokumen STR', desc: 'STR Semua Tenaga Kesehatan' },
-  { key: 'dok_18', title: '18. SIP Semua Tenaga Kesehatan', desc: 'Untuk Perpanjangan Klinik' },
-  { key: 'dok_19', title: '19. SOP', desc: 'SOP Yang Ditandatangani Penanggung Jawab Klinik' },
-  { key: 'dok_20', title: '20. Rekomendasi Puskesmas', desc: 'Surat Pengantar Dari Puskesmas' },
-  { key: 'dok_21', title: '21. Peta Lokasi', desc: 'Peta Lokasi Dari Google Map' },
-  { key: 'dok_22', title: '22. Dokumen Pelaporan Program Nasional', desc: 'Untuk Perpanjangan Ijin' },
-  { key: 'dok_23', title: '23. Dokumen Peraturan Internal Klinik', desc: 'Peraturan Internal Klinik' },
-  { key: 'dok_24', title: '24. Bukti Registrasi Klinik', desc: 'Untuk Perpanjang Ijin' },
-  { key: 'dok_25', title: '25. Surat Komitmen Akan Akreditasi', desc: 'Surat Resmi Bermaterai' },
-  { key: 'dok_26', title: '26. Surat Komitmen Menggunakn RME', desc: 'Surat Resmi Bermaterai' },
-  { key: 'dok_27', title: '27. MOU RME', desc: 'MOU Rekam Medis elektronik' },
-  { key: 'dok_28', title: '28. Surat Komitmen Pengimputan INM', desc: 'Surat Komitmen Akan Pengimputan dan Pelaporan INM' },
+  { key: 'dok_6', title: '6. Izin Mendirikan Bangunan (IMB) / PBG', desc: 'Persetujuan Bangunan Gedung sesuai peruntukan' },
+  { key: 'dok_7', title: '7. Surat Layanan / Kelaikan Fungsi Gedung (SLF)', desc: 'Sertifikat kelaikan fungsi bangunan' },
+  { key: 'dok_8', title: '8. Surat Izin Praktik (SIP) Dokter Penanggung Jawab', desc: 'SIP dokter penanggung jawab klinik' },
+  { key: 'dok_9', title: '9. Daftar Seluruh Tenaga Medis & Paramedis', desc: 'Daftar nama lengkap beserta kualifikasi' },
+  { key: 'dok_10', title: '10. Salinan SIP Dokter & Tenaga Kesehatan Lainnya', desc: 'Kumpulan SIP seluruh nakes yang bertugas' },
+  { key: 'dok_11', title: '11. Surat Perjanjian Kerja Sama (PKS) Tenaga Medis', desc: 'Kontrak kerja tenaga kesehatan' },
+  { key: 'dok_12', title: '12. Surat Pernyataan Sanggup Mematuhi Peraturan', desc: 'Surat pernyataan bermaterai' },
+  { key: 'dok_13', title: '13. Denah Ruangan / Layout Klinik (Blueprint)', desc: 'Denah bangunan ukuran jelas per ruangan' },
+  { key: 'dok_14', title: '14. Dokumen Upaya Pengelolaan & Pemantauan Lingkungan', desc: 'Izin lingkungan hidup (UKL-UPL/SPPL)' },
+  { key: 'dok_15', title: '15. Kerjasama Pengolahan Limbah Medis B3', desc: 'PKS pihak ketiga pengangkut limbah medis B3' },
+  { key: 'dok_16', title: '16. Manifest Pengolahan Limbah B3 Bulanan', desc: 'Bukti pengelolaan limbah medis' },
+  { key: 'dok_17', title: '17. Daftar Inventaris Alat Kesehatan (Alkes)', desc: 'Daftar lengkap alkes utama & pendukung' },
+  { key: 'dok_18', title: '18. Sertifikat Kalibrasi Alat Kesehatan', desc: 'Bukti kalibrasi alkes yang masih berlaku' },
+  { key: 'dok_19', title: '19. SOP Pelayanan Medis & Keperawatan', desc: 'Standar Operasional Prosedur pelayanan klinik' },
+  { key: 'dok_20', title: '20. SOP Pencegahan & Pengendalian Infeksi (PPI)', desc: 'Prosedur pencegahan infeksi nosokomial' },
+  { key: 'dok_21', title: '21. SOP Penanganan Kegawatdaruratan (Emergency)', desc: 'Prosedur rujukan & gawat darurat' },
+  { key: 'dok_22', title: '22. Dokumen Formularium Obat & Alkes', desc: 'Daftar sediaan obat yang disediakan di klinik' },
+  { key: 'dok_23', title: '23. Surat Izin Apotek (SIA) / Ruang Farmasi', desc: 'Perizinan pengelolaan obat' },
+  { key: 'dok_24', title: '24. Surat Penunjukan Apoteker Penanggung Jawab', desc: 'SIPA Apoteker yang bertugas' },
+  { key: 'dok_25', title: '25. Sistem Rekam Medis (Manual / Elektronik)', desc: 'Kebijakan & SOP pengelolaan rekam medis pasien' },
+  { key: 'dok_26', title: '26. Bukti Kerjasama Rujukan (MoU RS Rujukan)', desc: 'MoU dengan Rumah Sakit terdekat' },
+  { key: 'dok_27', title: '27. Pas Foto & KTP Penanggung Jawab Klinik', desc: 'Identitas resmi pimpinan / penanggung jawab' },
+  { key: 'dok_28', title: '28. Surat Rekomendasi Organisasi Profesi (IDI)', desc: 'Rekomendasi IDI / asosiasi fasyankes setempat' },
 ];
 
 const generateInitialDocuments = () => {
@@ -57,7 +57,6 @@ const generateInitialDocuments = () => {
   return docs;
 };
 
-// Komponen Input Catatan Mandiri dengan Tombol Simpan (Bebas Lag Total)
 function NoteInputWithButton({ initialNote, onSaveNote }) {
   const [text, setText] = useState(initialNote || '');
 
@@ -78,7 +77,7 @@ function NoteInputWithButton({ initialNote, onSaveNote }) {
         type="button" 
         onClick={() => onSaveNote(text)}
         title="Simpan Catatan"
-        className="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-[10px] font-bold flex items-center justify-center shadow-sm"
+        className="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-[10px] font-bold flex items-center justify-center shadow-sm cursor-pointer"
       >
         <Check className="w-3 h-3" />
       </button>
@@ -114,19 +113,15 @@ export default function App() {
 
   const [users, setUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [uploadingDocKey, setUploadingDocKey] = useState(null);
 
-  // Fungsi sinkronisasi data yang diperkuat agar tombol berfungsi optimal
   const fetchProfiles = async () => {
-    if (!supabase) {
-      alert('Koneksi Supabase belum terkonfigurasi dengan benar.');
-      return;
-    }
+    if (!supabase) return;
     setIsRefreshing(true);
     try {
-      const { data, error } = await supabase.from('SIPERKLIN').select('*');
+      const { data, error } = await supabase.from('SIPERKLIN').select('id, name, email, phone, clinic_name, clinic_type, password, status, documents, visit_revision');
       if (error) {
         console.error('Supabase error:', error.message);
-        alert('Gagal menyinkronkan data: ' + error.message);
       } else if (data) {
         const formatted = data.map(item => ({
           id: item.id,
@@ -142,7 +137,6 @@ export default function App() {
         }));
         setUsers(formatted);
 
-        // Jika user aktif, perbarui datanya secara *real-time*
         const currentSaved = localStorage.getItem('siperklin_current_user');
         if (currentSaved) {
           const parsedUser = JSON.parse(currentSaved);
@@ -244,78 +238,107 @@ export default function App() {
     setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
   };
 
+  // Fungsi Unggah Dokumen ke Supabase Storage (Cloud)
   const handleUploadDoc = async (docKey, file) => {
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file terlalu besar! Maksimal 5MB.');
-      return;
-    }
+    if (!supabase) return;
+    setUploadingDocKey(docKey);
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async () => {
-      const base64Url = reader.result;
+    try {
+      const fileName = `${currentUser.id}_${docKey}_${Date.now()}.pdf`;
+      
+      // 1. Upload file ke Supabase Storage (Bucket: siperklin-files)
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('siperklin-files')
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
+      if (uploadError) {
+        alert('Gagal mengunggah file ke Storage: ' + uploadError.message);
+        setUploadingDocKey(null);
+        return;
+      }
+
+      // 2. Dapatkan Public URL dari file yang diunggah
+      const { data: publicUrlData } = supabase.storage
+        .from('siperklin-files')
+        .getPublicUrl(fileName);
+
+      const publicUrl = publicUrlData.publicUrl;
+
+      // 3. Simpan tautan URL ke dalam tabel database
       const updatedDocs = {
         ...currentUser.documents,
         [docKey]: { 
           name: file.name, 
-          url: base64Url, 
+          url: publicUrl, 
           status: 'Menunggu Verifikasi', 
           note: '',
           verifiedAt: '-'
         }
       };
 
-      if (supabase) {
-        const { error } = await supabase.from('SIPERKLIN').update({
-          documents: updatedDocs,
-          status: 'Sedang Diperiksa'
-        }).eq('id', currentUser.id);
+      const { error: dbError } = await supabase.from('SIPERKLIN').update({
+        documents: updatedDocs,
+        status: 'Sedang Diperiksa'
+      }).eq('id', currentUser.id);
 
-        if (error) {
-          alert('Gagal menyinkronkan dokumen: ' + error.message);
-          return;
-        }
+      if (dbError) {
+        alert('Gagal menyimpan tautan dokumen ke database: ' + dbError.message);
+      } else {
+        alert('Dokumen PDF berhasil diunggah ke Cloud Storage!');
+        fetchProfiles();
       }
-
-      alert('Dokumen PDF berhasil diunggah!');
-      fetchProfiles();
-    };
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Terjadi kesalahan saat mengunggah file.');
+    } finally {
+      setUploadingDocKey(null);
+    }
   };
 
+  // Fungsi Unggah Perbaikan Visitasi ke Supabase Storage
   const handleUploadVisitRevision = async (file) => {
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file terlalu besar! Maksimal 5MB.');
-      return;
-    }
+    if (!supabase) return;
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async () => {
-      const base64Url = reader.result;
+    try {
+      const fileName = `${currentUser.id}_visit_${Date.now()}.pdf`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('siperklin-files')
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
+
+      if (uploadError) {
+        alert('Gagal mengunggah berkas perbaikan: ' + uploadError.message);
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('siperklin-files')
+        .getPublicUrl(fileName);
+
+      const publicUrl = publicUrlData.publicUrl;
+
       const revisionData = {
         name: file.name,
-        url: base64Url,
+        url: publicUrl,
         status: 'Menunggu Verifikasi Visitasi',
         note: '',
         verifiedAt: '-'
       };
 
-      if (supabase) {
-        const { error } = await supabase.from('SIPERKLIN').update({
-          visit_revision: revisionData,
-          status: 'Menunggu Verifikasi Visitasi'
-        }).eq('id', currentUser.id);
+      const { error: dbError } = await supabase.from('SIPERKLIN').update({
+        visit_revision: revisionData,
+        status: 'Menunggu Verifikasi Visitasi'
+      }).eq('id', currentUser.id);
 
-        if (error) {
-          alert('Gagal mengunggah berkas perbaikan visitasi: ' + error.message);
-          return;
-        }
+      if (dbError) {
+        alert('Gagal menyimpan ke database: ' + dbError.message);
+      } else {
+        alert('Berkas perbaikan visitasi berhasil diunggah!');
+        fetchProfiles();
       }
-
-      alert('Berkas perbaikan setelah visitasi berhasil diunggah!');
-      fetchProfiles();
-    };
+    } catch (err) {
+      console.error('Upload error:', err);
+    }
   };
 
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
@@ -357,7 +380,7 @@ export default function App() {
         return;
       }
     }
-    alert('Perubahan status & tanggal verifikasi berhasil disimpan!');
+    alert('Status dan tanggal verifikasi berhasil disimpan!');
   };
 
   const handleDeleteUser = async (userId) => {
@@ -455,9 +478,9 @@ export default function App() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
-                  Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap dokumen resmi.
+                  Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
                 </p>
               </div>
               <div className="pt-6 border-t border-emerald-700/60 text-xs text-emerald-200">
@@ -487,7 +510,7 @@ export default function App() {
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
-                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">Bidang Yankes</code><code className="bg-white px-1 font-bold text-emerald-700"></code></p>
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700">Pelayanankesehatan1</code></p>
                   </div>
                 </form>
               )}
@@ -504,7 +527,7 @@ export default function App() {
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Klinik</label>
-                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama Satya" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
 
@@ -596,6 +619,7 @@ export default function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
                 {LIST_28_DOKUMEN.map((item) => {
                   const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', verifiedAt: '-' };
+                  const isUploading = uploadingDocKey === item.key;
                   return (
                     <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-300 transition">
                       <div>
@@ -635,12 +659,12 @@ export default function App() {
                       </div>
 
                       <div className="pt-2 border-t border-gray-200 flex items-center justify-between">
-                        <label className="cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold py-1.5 px-3 rounded-xl transition flex items-center space-x-1 shadow-sm">
+                        <label className={`cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold py-1.5 px-3 rounded-xl transition flex items-center space-x-1 shadow-sm ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                           <Upload className="w-3 h-3" />
-                          <span>{docInfo.name === 'Belum diunggah' ? 'Unggah PDF' : 'Ganti PDF'}</span>
-                          <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadDoc(item.key, e.target.files[0]); }} />
+                          <span>{isUploading ? 'Mengunggah...' : (docInfo.name === 'Belum diunggah' ? 'Unggah PDF' : 'Ganti PDF')}</span>
+                          <input type="file" accept="application/pdf" disabled={isUploading} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadDoc(item.key, e.target.files[0]); }} />
                         </label>
-                        <span className="text-[10px] text-gray-400">PDF max 2MB</span>
+                        <span className="text-[10px] text-gray-400">Cloud Storage</span>
                       </div>
                     </div>
                   );
@@ -658,7 +682,7 @@ export default function App() {
                 <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Verifikasi Dokumen & Perbaikan Visitasi Klinik</h1>
                 <p className="text-gray-300 text-xs mt-1">Dinas Kesehatan Kabupaten Badung • {currentDateFormatted}</p>
               </div>
-              <button onClick={handleExportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl font-bold text-xs shadow-lg transition flex items-center space-x-2 border border-emerald-500">
+              <button onClick={handleExportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl font-bold text-xs shadow-lg transition flex items-center space-x-2 border border-emerald-500 cursor-pointer">
                 <FileSpreadsheet className="w-4 h-4" />
                 <span>Unduh Rekap Excel (.xlsx)</span>
               </button>
@@ -701,11 +725,11 @@ export default function App() {
                             <div className="mt-2 inline-flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl text-xs text-amber-900">
                               <span className="font-bold">Perbaikan Visitasi:</span>
                               <span>{u.visitRevision.name}</span>
-                              <button onClick={() => setPreviewDoc({ title: 'Perbaikan Visitasi — ' + u.clinicName, name: u.visitRevision.name, url: u.visitRevision.url, status: u.visitRevision.status, note: '' })} className="text-emerald-700 font-bold underline ml-1">Lihat File</button>
+                              <button onClick={() => setPreviewDoc({ title: 'Perbaikan Visitasi — ' + u.clinicName, name: u.visitRevision.name, url: u.visitRevision.url, status: u.visitRevision.status, note: '' })} className="text-emerald-700 font-bold underline ml-1 cursor-pointer">Lihat File</button>
                             </div>
                           )}
                         </div>
-                        <button onClick={() => handleDeleteUser(u.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl text-xs font-semibold border border-red-200 flex items-center space-x-1">
+                        <button onClick={() => handleDeleteUser(u.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl text-xs font-semibold border border-red-200 flex items-center space-x-1 cursor-pointer">
                           <Trash2 className="w-3.5 h-3.5" /><span>Hapus Pemohon</span>
                         </button>
                       </div>
@@ -725,7 +749,7 @@ export default function App() {
                                 </div>
                                 <p className="text-[11px] font-medium text-gray-800 truncate mb-1.5">{docVal.name}</p>
                                 
-                                <button onClick={() => setPreviewDoc({ title: listItem.title, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: u.clinicName })} className="text-[10px] text-emerald-700 font-bold hover:underline flex items-center space-x-1 mb-2">
+                                <button onClick={() => setPreviewDoc({ title: listItem.title, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: u.clinicName })} className="text-[10px] text-emerald-700 font-bold hover:underline flex items-center space-x-1 mb-2 cursor-pointer">
                                   <Eye className="w-3 h-3" /><span>Lihat File PDF</span>
                                 </button>
 
@@ -738,7 +762,7 @@ export default function App() {
                                   <select 
                                     value={docVal.status} 
                                     onChange={(e) => handleAdminUpdateDocStatus(u.id, listItem.key, e.target.value, docVal.note)} 
-                                    className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1"
+                                    className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded p-1 cursor-pointer"
                                   >
                                     <option value="Menunggu Verifikasi">Menunggu</option>
                                     <option value="Sudah Terverifikasi">Terverifikasi</option>
@@ -773,7 +797,7 @@ export default function App() {
                 <h3 className="text-lg font-extrabold text-gray-900 mt-1">{previewDoc.title}</h3>
                 {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic} — File: {previewDoc.name}</p>}
               </div>
-              <button onClick={() => setPreviewDoc(null)} className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition">
+              <button onClick={() => setPreviewDoc(null)} className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -797,7 +821,7 @@ export default function App() {
 
             <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
               <span className="text-xs text-gray-500">Status: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
-              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition">Tutup</button>
+              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition cursor-pointer">Tutup</button>
             </div>
           </div>
         </div>
