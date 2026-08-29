@@ -13,34 +13,34 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 const LIST_28_DOKUMEN = [
-  { key: 'dok_1', title: '1. Surat Permohonan Izin Operasional', desc: 'Surat permohonan resmi bermaterai' },
-  { key: 'dok_2', title: '2. Profil Lengkap Klinik', desc: 'Visi, misi, struktur organisasi, & layanan' },
-  { key: 'dok_3', title: '3. Akta Pendirian Badan Hukum/Usaha', desc: 'Akta notaris pendirian yayasan/PT/CV' },
-  { key: 'dok_4', title: '4. Pengesahan Badan Hukum dari Kemenkumham', desc: 'Surat keputusan pengesahan resmi' },
+  { key: 'dok_1', title: '1. Surat Permohonan Rekomendasi Klinik', desc: 'Surat permohonan resmi bermaterai' },
+  { key: 'dok_2', title: '2. Foto SLF / PBG', desc: 'Foto SLF / PBG terbit' },
+  { key: 'dok_3', title: '3. Foto NIB', desc: 'Foto NIB (Nomor Induk Berusaha)' },
+  { key: 'dok_4', title: '4. Salinan / Foto Copy Legalitas Pelaku Usaha', desc: 'Foto Akte Notaris Pendirian Badan Hukum' },
   { key: 'dok_5', title: '5. Bukti Kepemilikan / Penguasaan Tanah & Gedung', desc: 'Sertifikat tanah / Akta sewa bangunan minimal 5 tahun' },
-  { key: 'dok_6', title: '6. Izin Mendirikan Bangunan (IMB) / PBG', desc: 'Persetujuan Bangunan Gedung sesuai peruntukan' },
-  { key: 'dok_7', title: '7. Surat Layanan / Kelaikan Fungsi Gedung (SLF)', desc: 'Sertifikat kelaikan fungsi bangunan' },
-  { key: 'dok_8', title: '8. Surat Izin Praktik (SIP) Dokter Penanggung Jawab', desc: 'SIP dokter penanggung jawab klinik' },
-  { key: 'dok_9', title: '9. Daftar Seluruh Tenaga Medis & Paramedis', desc: 'Daftar nama lengkap beserta kualifikasi' },
-  { key: 'dok_10', title: '10. Salinan SIP Dokter & Tenaga Kesehatan Lainnya', desc: 'Kumpulan SIP seluruh nakes yang bertugas' },
-  { key: 'dok_11', title: '11. Surat Perjanjian Kerja Sama (PKS) Tenaga Medis', desc: 'Kontrak kerja tenaga kesehatan' },
-  { key: 'dok_12', title: '12. Surat Pernyataan Sanggup Mematuhi Peraturan', desc: 'Surat pernyataan bermaterai' },
-  { key: 'dok_13', title: '13. Denah Ruangan / Layout Klinik (Blueprint)', desc: 'Denah bangunan ukuran jelas per ruangan' },
-  { key: 'dok_14', title: '14. Dokumen Upaya Pengelolaan & Pemantauan Lingkungan', desc: 'Izin lingkungan hidup (UKL-UPL/SPPL)' },
-  { key: 'dok_15', title: '15. Kerjasama Pengolahan Limbah Medis B3', desc: 'PKS pihak ketiga pengangkut limbah medis B3' },
-  { key: 'dok_16', title: '16. Manifest Pengolahan Limbah B3 Bulanan', desc: 'Bukti pengelolaan limbah medis' },
-  { key: 'dok_17', title: '17. Daftar Inventaris Alat Kesehatan (Alkes)', desc: 'Daftar lengkap alkes utama & pendukung' },
-  { key: 'dok_18', title: '18. Sertifikat Kalibrasi Alat Kesehatan', desc: 'Bukti kalibrasi alkes yang masih berlaku' },
-  { key: 'dok_19', title: '19. SOP Pelayanan Medis & Keperawatan', desc: 'Standar Operasional Prosedur pelayanan klinik' },
-  { key: 'dok_20', title: '20. SOP Pencegahan & Pengendalian Infeksi (PPI)', desc: 'Prosedur pencegahan infeksi nosokomial' },
-  { key: 'dok_21', title: '21. SOP Penanganan Kegawatdaruratan (Emergency)', desc: 'Prosedur rujukan & gawat darurat' },
-  { key: 'dok_22', title: '22. Dokumen Formularium Obat & Alkes', desc: 'Daftar sediaan obat yang disediakan di klinik' },
-  { key: 'dok_23', title: '23. Surat Izin Apotek (SIA) / Ruang Farmasi', desc: 'Perizinan pengelolaan obat' },
-  { key: 'dok_24', title: '24. Surat Penunjukan Apoteker Penanggung Jawab', desc: 'SIPA Apoteker yang bertugas' },
-  { key: 'dok_25', title: '25. Sistem Rekam Medis (Manual / Elektronik)', desc: 'Kebijakan & SOP pengelolaan rekam medis pasien' },
-  { key: 'dok_26', title: '26. Bukti Kerjasama Rujukan (MoU RS Rujukan)', desc: 'MoU dengan Rumah Sakit terdekat' },
-  { key: 'dok_27', title: '27. Pas Foto & KTP Penanggung Jawab Klinik', desc: 'Identitas resmi pimpinan / penanggung jawab' },
-  { key: 'dok_28', title: '28. Surat Rekomendasi Organisasi Profesi (IDI)', desc: 'Rekomendasi IDI / asosiasi fasyankes setempat' },
+  { key: 'dok_6', title: '6. Dokumen UKL / UPL, SPPL', desc: 'Dokumen Pengelolaan dan Pemantauan Lingkungan Hidup' },
+  { key: 'dok_7', title: '7. Daftar Obat dan BHP', desc: 'Daftar Obat dan Barang Habis Pakai' },
+  { key: 'dok_8', title: '8. Dokumen Profil Klinik', desc: 'Profil Klinik Lengkap' },
+  { key: 'dok_9', title: '9. Daftar SDM', desc: 'Daftar Nama SDM Sesuai Ketentuan' },
+  { key: 'dok_10', title: '10. Dokumen Kalibrasi', desc: 'Dokumen Kalibrasi Alkes' },
+  { key: 'dok_11', title: '11. Dokumen Self Assessment Klinik', desc: 'Dokumen Self Assessment Klinik Lengkap' },
+  { key: 'dok_12', title: '12. MOU Limbah Medis B3', desc: 'Dokumen Perjanjian Kerja Sama' },
+  { key: 'dok_13', title: '13. Denah Ruangan', desc: 'Gambar Denah Ruangan Jelas Beserta Ukurannya' },
+  { key: 'dok_14', title: '14. Instalasi Kelistrikan', desc: 'Gambar Instalasi Jaringan Kelistrikan' },
+  { key: 'dok_15', title: '15. Foto Copy Dokumen Genset', desc: 'Foto Copy Dokumen Genset' },
+  { key: 'dok_16', title: '16. Penangung Jawab Klinik', desc: 'Foto KTP, SK Pengajuan Sebagai Penanggung Jawab, Surat Pernyataan Kesanggupan, Foto SKCK, FOTO STR dan SIP' },
+  { key: 'dok_17', title: '17. Dokumen STR', desc: 'STR Semua Tenaga Kesehatan' },
+  { key: 'dok_18', title: '18. SIP Semua Tenaga Kesehatan', desc: 'Untuk Perpanjangan Klinik' },
+  { key: 'dok_19', title: '19. SOP', desc: 'SOP Yang Ditandatangani Penanggung Jawab Klinik' },
+  { key: 'dok_20', title: '20. Rekomendasi Puskesmas', desc: 'Surat Pengantar Dari Puskesmas' },
+  { key: 'dok_21', title: '21. Peta Lokasi', desc: 'Peta Lokasi Dari Google Map' },
+  { key: 'dok_22', title: '22. Dokumen Pelaporan Program Nasional', desc: 'Untuk Perpanjangan Ijin' },
+  { key: 'dok_23', title: '23. Dokumen Peraturan Internal Klinik', desc: 'Peraturan Internal Klinik' },
+  { key: 'dok_24', title: '24. Bukti Registrasi Klinik', desc: 'Untuk Perpanjang Ijin' },
+  { key: 'dok_25', title: '25. Surat Komitmen Akan Akreditasi', desc: 'Surat Resmi Bermaterai' },
+  { key: 'dok_26', title: '26. Surat Komitmen Menggunakn RME', desc: 'Surat Resmi Bermaterai' },
+  { key: 'dok_27', title: '27. MOU RME', desc: 'MOU Rekam Medis elektronik' },
+  { key: 'dok_28', title: '28. Surat Komitmen Pengimputan INM', desc: 'Surat Komitmen Akan Pengimputan dan Pelaporan INM' },
 ];
 
 const generateInitialDocuments = () => {
@@ -478,7 +478,7 @@ export default function App() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN BADUNG</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
                 <p className="text-emerald-100 text-sm leading-relaxed mb-6">
                   Portal pengurusan rekomendasi operasional klinik Pratama dan Utama dengan persyaratan lengkap 28 dokumen resmi.
                 </p>
@@ -510,7 +510,7 @@ export default function App() {
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
-                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">yankesbadung</code> | <code className="bg-white px-1 font-bold text-emerald-700">Pelayanankesehatan1</code></p>
+                    <p>• <strong>Admin:</strong> <code className="bg-white px-1 font-bold text-emerald-700">Bidang Yankes</code><code className="bg-white px-1 font-bold text-emerald-700"></code></p>
                   </div>
                 </form>
               )}
