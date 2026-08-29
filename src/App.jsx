@@ -640,7 +640,7 @@ export default function App() {
                           <span>{docInfo.name === 'Belum diunggah' ? 'Unggah PDF' : 'Ganti PDF'}</span>
                           <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadDoc(item.key, e.target.files[0]); }} />
                         </label>
-                        <span className="text-[10px] text-gray-400">PDF max 5MB</span>
+                        <span className="text-[10px] text-gray-400">PDF max 2MB</span>
                       </div>
                     </div>
                   );
