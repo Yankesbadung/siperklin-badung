@@ -114,7 +114,6 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [uploadingDocKey, setUploadingDocKey] = useState(null);
-  const [isUploadingVisit, setIsUploadingVisit] = useState(false);
 
   const fetchProfiles = async () => {
     if (!supabase) return;
@@ -296,10 +295,9 @@ export default function App() {
     }
   };
 
-  // Fungsi Unggah Perbaikan Visitasi ke Supabase Storage (dengan Indikator Loading)
+  // Fungsi Unggah Perbaikan Visitasi ke Supabase Storage
   const handleUploadVisitRevision = async (file) => {
     if (!supabase) return;
-    setIsUploadingVisit(true);
 
     try {
       const fileName = `${currentUser.id}_visit_${Date.now()}.pdf`;
@@ -310,7 +308,6 @@ export default function App() {
 
       if (uploadError) {
         alert('Gagal mengunggah berkas perbaikan: ' + uploadError.message);
-        setIsUploadingVisit(false);
         return;
       }
 
@@ -341,10 +338,60 @@ export default function App() {
       }
     } catch (err) {
       console.error('Upload error:', err);
-    } finally {
-      setIsUploadingVisit(false);
     }
   };
+
+  const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const verificationTimestamp = (newStatus === 'Sudah Terverifikasi' || newStatus === 'Catatan Perbaikan') ? formattedDate : '-';
+
+    const updatedDocs = {
+      ...targetUser.documents,
+      [docKey]: { 
+        ...targetUser.documents[docKey], 
+        status: newStatus, 
+        note: newNote,
+        verifiedAt: verificationTimestamp
+      }
+    };
+
+    const statuses = Object.values(updatedDocs).map(d => d.status);
+    let overallStatus = 'Sedang Diperiksa';
+    if (statuses.every(s => s === 'Sudah Terverifikasi')) {
+      overallStatus = 'Sudah Terverifikasi';
+    } else if (statuses.some(s => s === 'Catatan Perbaikan')) {
+      overallStatus = 'Catatan Perbaikan';
+    }
+
+    setUsers(prevUsers => prevUsers.map(u => u.id === userId ? { ...u, documents: updatedDocs, status: overallStatus } : u));
+
+    if (supabase) {
+      const { error } = await supabase.from('SIPERKLIN').update({
+        documents: updatedDocs,
+        status: overallStatus
+      }).eq('id', userId);
+
+      if (error) {
+        alert('Gagal memperbarui ke database: ' + error.message);
+        return;
+      }
+    }
+    alert('Status dan tanggal verifikasi berhasil disimpan!');
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Yakin ingin menghapus pemohon ini?')) {
+      if (supabase) {
+        await supabase.from('SIPERKLIN').delete().eq('id', userId);
+      }
+      fetchProfiles();
+    }
+  };
+
   const handleExportExcel = () => {
     if (users.length === 0) {
       alert('Tidak ada data rekapitulasi untuk diunduh.');
