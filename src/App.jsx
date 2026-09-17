@@ -664,7 +664,7 @@ export default function App() {
                 <h3>Link Video Dokumentasi / Tinjauan Lapangan</h3>
               </div>
               <p className="text-xs text-gray-600 mb-3">
-                Masukkan tautan video (contoh: YouTube, Google Drive, atau tautan cloud lainnya) terkait profil klinik atau video pendukung peninjauan.
+                Masukkan tautan video (contoh: Link Google Drive, atau tautan cloud lainnya) terkait perbaikan klinik atau video pendukung peninjauan.
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input 
