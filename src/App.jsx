@@ -12,6 +12,23 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
+const MAX_UPLOAD_SIZE = 2 * 1024 * 1024; // 2 MB
+
+// Validasi ukuran dan tipe file sebelum diunggah
+const validateUploadFile = (file) => {
+  if (!file) return false;
+  if (file.type !== 'application/pdf') {
+    alert('Hanya file PDF yang diperbolehkan.');
+    return false;
+  }
+  if (file.size > MAX_UPLOAD_SIZE) {
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    alert(`Ukuran file ${sizeMb} MB melebihi batas maksimal 2 MB. Silakan kompres file terlebih dahulu.`);
+    return false;
+  }
+  return true;
+};
+
 const LIST_28_DOKUMEN = [
   { key: 'dok_1', title: '1. Surat Permohonan Rekomendasi Klinik', desc: 'Surat permohonan resmi bermaterai' },
   { key: 'dok_2', title: '2. Foto SLF / PBG', desc: 'Foto SLF / PBG terbit' },
@@ -241,6 +258,7 @@ export default function App() {
   // Fungsi Unggah Dokumen ke Supabase Storage (Cloud)
   const handleUploadDoc = async (docKey, file) => {
     if (!supabase) return;
+    if (!validateUploadFile(file)) return;
     setUploadingDocKey(docKey);
 
     try {
@@ -298,6 +316,7 @@ export default function App() {
   // Fungsi Unggah Perbaikan Visitasi ke Supabase Storage
   const handleUploadVisitRevision = async (file) => {
     if (!supabase) return;
+    if (!validateUploadFile(file)) return;
 
     try {
       const fileName = `${currentUser.id}_visit_${Date.now()}.pdf`;
@@ -585,7 +604,7 @@ export default function App() {
                     <h2>Menu Perbaikan / Tindak Lanjut Setelah Visitasi Lapangan</h2>
                   </div>
                   <p className="text-xs text-gray-600">
-                    Jika tim Dinas Kesehatan telah melakukan visitasi dan memberikan catatan perbaikan, silakan unggah dokumen/berkas perbaikan Anda di sini.
+                    Jika tim Dinas Kesehatan telah melakukan visitasi dan memberikan catatan perbaikan, silakan unggah dokumen/berkas perbaikan Anda di sini (PDF, maksimal 2 MB).
                   </p>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -597,7 +616,7 @@ export default function App() {
                   <label className="cursor-pointer bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow transition flex items-center space-x-1.5">
                     <Upload className="w-4 h-4" />
                     <span>{currentUser.visitRevision?.name === 'Belum diunggah' ? 'Unggah Berkas Perbaikan' : 'Ganti Berkas Perbaikan'}</span>
-                    <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadVisitRevision(e.target.files[0]); }} />
+                    <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) handleUploadVisitRevision(f); }} />
                   </label>
                 </div>
               </div>
@@ -612,7 +631,7 @@ export default function App() {
               <div className="mb-6 flex justify-between items-center">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Daftar 28 Berkas Persyaratan Perizinan Klinik</h2>
-                  <p className="text-xs text-gray-500">Silakan unggah seluruh berkas PDF persyaratan di bawah ini.</p>
+                  <p className="text-xs text-gray-500">Silakan unggah seluruh berkas PDF persyaratan di bawah ini (maksimal 2 MB per file).</p>
                 </div>
               </div>
 
@@ -662,7 +681,7 @@ export default function App() {
                         <label className={`cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold py-1.5 px-3 rounded-xl transition flex items-center space-x-1 shadow-sm ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                           <Upload className="w-3 h-3" />
                           <span>{isUploading ? 'Mengunggah...' : (docInfo.name === 'Belum diunggah' ? 'Unggah PDF' : 'Ganti PDF')}</span>
-                          <input type="file" accept="application/pdf" disabled={isUploading} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleUploadDoc(item.key, e.target.files[0]); }} />
+                          <input type="file" accept="application/pdf" disabled={isUploading} className="hidden" onChange={(e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) handleUploadDoc(item.key, f); }} />
                         </label>
                         <span className="text-[10px] text-gray-400">Cloud Storage</span>
                       </div>
