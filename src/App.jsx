@@ -134,8 +134,6 @@ export default function App() {
   const [videoLinkInput, setVideoLinkInput] = useState('');
 
   const [selectedAdminClinicId, setSelectedAdminClinicId] = useState(null);
-
-  // State untuk catatan perbaikan visitasi di sisi admin
   const [visitNoteInput, setVisitNoteInput] = useState('');
 
   const fetchProfiles = async () => {
@@ -199,7 +197,6 @@ export default function App() {
     }
   }, [currentUser]);
 
-  // Update visitNoteInput ketika admin mengganti pilihan klinik
   useEffect(() => {
     const sel = users.find(u => u.id === selectedAdminClinicId);
     if (sel) {
@@ -312,6 +309,7 @@ export default function App() {
 
       const publicUrl = publicUrlData.publicUrl;
 
+      // Saat user mengunggah ulang dokumen baru, reset catatan perbaikan menjadi kosong
       const updatedDocs = {
         ...currentUser.documents,
         [docKey]: { 
@@ -364,6 +362,7 @@ export default function App() {
 
       const publicUrl = publicUrlData.publicUrl;
 
+      // Reset catatan perbaikan visitasi saat user mengunggah berkas baru
       const revisionData = {
         name: file.name,
         url: publicUrl,
@@ -406,6 +405,7 @@ export default function App() {
     }
   };
 
+  // Fungsi Admin Memverifikasi Dokumen (Catatan otomatis terhapus jika "Sudah Terverifikasi")
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
@@ -414,12 +414,15 @@ export default function App() {
     const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const verificationTimestamp = (newStatus === 'Sudah Terverifikasi' || newStatus === 'Catatan Perbaikan') ? formattedDate : '-';
 
+    // Jika sudah terverifikasi, catatan otomatis dikosongkan
+    const finalNote = (newStatus === 'Sudah Terverifikasi') ? '' : newNote;
+
     const updatedDocs = {
       ...targetUser.documents,
       [docKey]: { 
         ...targetUser.documents[docKey], 
         status: newStatus, 
-        note: newNote,
+        note: finalNote,
         verifiedAt: verificationTimestamp
       }
     };
@@ -445,10 +448,10 @@ export default function App() {
         return;
       }
     }
-    alert('Status dan tanggal verifikasi berhasil disimpan!');
+    alert('Status verifikasi berhasil disimpan!');
   };
 
-  // Fungsi Admin untuk Memverifikasi Perbaikan Visitasi
+  // Fungsi Admin Memverifikasi Perbaikan Visitasi (Catatan otomatis terhapus jika "Sudah Terverifikasi")
   const handleAdminUpdateVisitStatus = async (userId, newStatus) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser || !targetUser.visitRevision || targetUser.visitRevision.name === 'Belum diunggah') {
@@ -460,10 +463,13 @@ export default function App() {
     const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const verificationTimestamp = (newStatus === 'Sudah Terverifikasi' || newStatus === 'Catatan Perbaikan Visitasi') ? formattedDate : '-';
 
+    // Jika sudah terverifikasi, catatan perbaikan visitasi otomatis dikosongkan
+    const finalVisitNote = (newStatus === 'Sudah Terverifikasi') ? '' : visitNoteInput;
+
     const updatedVisit = {
       ...targetUser.visitRevision,
       status: newStatus,
-      note: visitNoteInput,
+      note: finalVisitNote,
       verifiedAt: verificationTimestamp
     };
 
@@ -475,6 +481,7 @@ export default function App() {
     }
 
     setUsers(prevUsers => prevUsers.map(u => u.id === userId ? { ...u, visitRevision: updatedVisit, status: overallStatus } : u));
+    setVisitNoteInput(finalVisitNote);
 
     if (supabase) {
       const { error } = await supabase.from('SIPERKLIN').update({
@@ -832,7 +839,7 @@ export default function App() {
           </div>
         )}
 
-      {/* DASHBOARD ADMIN DENGAN FITUR VERIFIKASI PERBAIKAN VISITASI */}
+      {/* DASHBOARD ADMIN DENGAN PENGHAPUSAN CATATAN OTOMATIS SAAT TERVERIFIKASI */}
         {currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
             <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -993,6 +1000,7 @@ export default function App() {
                           </div>
                           <p className="text-[11px] text-gray-500">
                             Status saat ini: <strong className="text-emerald-800">{selectedClinic.visitRevision.status}</strong>
+                            {selectedClinic.visitRevision.note && <span className="ml-2 text-red-600">({selectedClinic.visitRevision.note})</span>}
                           </p>
                         </div>
                       )}
