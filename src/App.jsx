@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar, Check, Video, ExternalLink, ChevronRight, CheckCircle, FileCheck2 
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar, Check, Video, ExternalLink, ChevronRight, CheckCircle, FileCheck2, Bell 
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
@@ -135,9 +135,17 @@ export default function App() {
 
   const [selectedAdminClinicId, setSelectedAdminClinicId] = useState(null);
   const [visitNoteInput, setVisitNoteInput] = useState('');
-  
-  // State untuk tab aktif di panel admin ('documents' atau 'visit')
   const [adminActiveTab, setAdminActiveTab] = useState('documents');
+
+  // State untuk Notifikasi Pop-up Global
+  const [notification, setNotification] = useState(null);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
 
   const fetchProfiles = async () => {
     if (!supabase) return;
@@ -219,6 +227,7 @@ export default function App() {
       setCurrentView('admin-dashboard');
       localStorage.setItem('siperklin_current_user', JSON.stringify(adminData));
       if (users.length > 0) setSelectedAdminClinicId(users[0].id);
+      showNotification('Berhasil masuk sebagai Administrator.');
       return;
     }
 
@@ -231,6 +240,7 @@ export default function App() {
       setVideoLinkInput(foundUser.videoLink || '');
       setCurrentView('user-dashboard');
       localStorage.setItem('siperklin_current_user', JSON.stringify(foundUser));
+      showNotification(`Selamat datang kembali, ${foundUser.clinicName}!`);
     } else {
       setLoginError('Username/Email/No. Telp atau Password salah, atau akun belum terdaftar.');
     }
@@ -240,6 +250,7 @@ export default function App() {
     setCurrentUser(null);
     setCurrentView('login');
     localStorage.removeItem('siperklin_current_user');
+    showNotification('Anda telah keluar dari sistem.');
   };
 
   const handleRegister = async (e) => {
@@ -283,6 +294,7 @@ export default function App() {
     }
 
     setRegSuccess('Pendaftaran berhasil! Silakan masuk.');
+    showNotification('Pendaftaran akun klinik berhasil!');
     setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRegClinicName(''); setRegClinicType('Klinik Pratama');
     fetchProfiles();
     setTimeout(() => { setAuthTab('login'); setRegSuccess(''); }, 2000);
@@ -331,7 +343,7 @@ export default function App() {
       if (dbError) {
         alert('Gagal menyimpan tautan dokumen ke database: ' + dbError.message);
       } else {
-        alert('Dokumen PDF berhasil diunggah ke Cloud Storage!');
+        showNotification('Dokumen PDF berhasil diunggah!');
         fetchProfiles();
       }
     } catch (err) {
@@ -380,7 +392,7 @@ export default function App() {
       if (dbError) {
         alert('Gagal menyimpan ke database: ' + dbError.message);
       } else {
-        alert('Berkas perbaikan visitasi berhasil diunggah!');
+        showNotification('Berkas perbaikan visitasi berhasil diunggah!');
         fetchProfiles();
       }
     } catch (err) {
@@ -398,7 +410,7 @@ export default function App() {
       if (error) {
         alert('Gagal menyimpan link video: ' + error.message);
       } else {
-        alert('Link video berhasil disimpan!');
+        showNotification('Tautan video berhasil disimpan!');
         fetchProfiles();
       }
     } catch (err) {
@@ -406,7 +418,7 @@ export default function App() {
     }
   };
 
-  // Fungsi Admin Memverifikasi Dokumen (Catatan otomatis terhapus jika "Sudah Terverifikasi")
+  // Fungsi Admin Memverifikasi Dokumen dengan Notifikasi Pop-up
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
@@ -448,9 +460,10 @@ export default function App() {
         return;
       }
     }
+    showNotification(`Status dokumen diperbarui: ${newStatus}`);
   };
 
-  // Fungsi Admin Memverifikasi Perbaikan Visitasi (Catatan otomatis terhapus jika "Sudah Terverifikasi")
+  // Fungsi Admin Memverifikasi Perbaikan Visitasi dengan Notifikasi Pop-up
   const handleAdminUpdateVisitStatus = async (userId, newStatus) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser || !targetUser.visitRevision || targetUser.visitRevision.name === 'Belum diunggah') {
@@ -492,7 +505,7 @@ export default function App() {
         return;
       }
     }
-    alert('Status perbaikan visitasi berhasil diperbarui!');
+    showNotification(`Verifikasi visitasi diperbarui: ${newStatus}`);
   };
 
   const handleDeleteUser = async (userId) => {
@@ -504,6 +517,7 @@ export default function App() {
         const remaining = users.filter(u => u.id !== userId);
         setSelectedAdminClinicId(remaining.length > 0 ? remaining[0].id : null);
       }
+      showNotification('Data pemohon klinik berhasil dihapus.');
       fetchProfiles();
     }
   };
@@ -534,6 +548,7 @@ export default function App() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Rekap Pengajuan Klinik');
     XLSX.writeFile(workbook, `Rekap_Pengajuan_SIPERKLIN_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showNotification('Rekap Excel berhasil diunduh!');
   };
 
   const totalPengajuan = users.length;
@@ -544,7 +559,21 @@ export default function App() {
   const selectedClinic = users.find(u => u.id === selectedAdminClinicId) || users[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 text-gray-800 flex flex-col justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 text-gray-800 flex flex-col justify-between relative">
+      
+      {/* NOTIFIKASI POP-UP FLOATING */}
+      {notification && (
+        <div className="fixed top-24 right-4 z-50 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-emerald-500/50 flex items-center space-x-3 animate-bounce">
+          <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+            <Bell className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-emerald-300">Pemberitahuan Sistem</p>
+            <p className="text-xs text-gray-100">{notification.message}</p>
+          </div>
+        </div>
+      )}
+
       <header className="bg-white border-b border-emerald-100 shadow-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { if(!currentUser) setCurrentView('login'); }}>
@@ -562,7 +591,7 @@ export default function App() {
 
           <div className="flex items-center space-x-3">
             {currentUser && (
-              <button onClick={() => fetchProfiles()} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200 cursor-pointer">
+              <button onClick={() => { fetchProfiles(); showNotification('Data berhasil disinkronkan.'); }} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200 cursor-pointer">
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span>{isRefreshing ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
               </button>
@@ -837,7 +866,7 @@ export default function App() {
           </div>
         )}
 
-      {/* DASHBOARD ADMIN DIPERBARUI AGAR SANGAT MUDAH MEMVERIFIKASI BERKAS */}
+      {/* DASHBOARD ADMIN DENGAN NOTIFIKASI POP-UP SAAT VERIFIKASI / CATATAN */}
         {currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
             <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -943,7 +972,7 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* TAB MENU VERIFIKASI (PILIHAN ANTARA 28 DOKUMEN & VISITASI) */}
+                  {/* TAB MENU VERIFIKASI */}
                   <div className="flex border-b border-gray-200">
                     <button 
                       onClick={() => setAdminActiveTab('documents')}
