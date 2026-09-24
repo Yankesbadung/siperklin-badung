@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, FileText, CheckCircle2, Clock, AlertCircle, 
   User, Lock, Mail, Phone, LogOut, Upload, Eye, Download, 
-  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar, Check, Video, ExternalLink, ChevronRight, CheckCircle, FileCheck2, Bell 
+  Trash2, X, ArrowRight, ShieldCheck, FileCheck, RefreshCw, AlertTriangle, FileSpreadsheet, Calendar, Check, Video, ExternalLink, ChevronRight, CheckCircle, FileCheck2, Bell, Menu 
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
@@ -94,7 +94,7 @@ function NoteInputWithButton({ initialNote, onSaveNote }) {
         type="button" 
         onClick={() => onSaveNote(text)}
         title="Simpan Catatan"
-        className="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center shadow-xs cursor-pointer transition"
+        className="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center shadow-xs cursor-pointer transition flex-shrink-0"
       >
         <Check className="w-3.5 h-3.5" />
       </button>
@@ -137,6 +137,8 @@ export default function App() {
   const [visitNoteInput, setVisitNoteInput] = useState('');
   const [adminActiveTab, setAdminActiveTab] = useState('documents');
 
+  // State untuk drawer/modal pilihan klinik di HP agar tidak sempit
+  const [showMobileClinicSelector, setShowMobileClinicSelector] = useState(false);
   const [notification, setNotification] = useState(null);
 
   const showNotification = (message, type = 'success') => {
@@ -560,98 +562,135 @@ export default function App() {
       
       {/* NOTIFIKASI POP-UP FLOATING */}
       {notification && (
-        <div className="fixed top-24 right-4 z-50 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-emerald-500/50 flex items-center space-x-3 animate-bounce">
+        <div className="fixed top-20 right-2 left-2 sm:left-auto sm:right-4 z-50 bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-emerald-500/50 flex items-center space-x-3">
           <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
             <Bell className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-xs font-bold text-emerald-300">Pemberitahuan Sistem</p>
+            <p className="text-[11px] font-bold text-emerald-300">Pemberitahuan Sistem</p>
             <p className="text-xs text-gray-100">{notification.message}</p>
           </div>
         </div>
       )}
 
+      {/* MODAL PEMILIH KLINIK KHUSUS HP (MOBILE DRAWER) */}
+      {showMobileClinicSelector && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[80vh] p-5 shadow-2xl flex flex-col">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100 mb-3">
+              <h3 className="text-sm font-extrabold text-gray-900 uppercase">Pilih Klinik Pemohon</h3>
+              <button onClick={() => setShowMobileClinicSelector(false)} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-2 overflow-y-auto pr-1 flex-grow">
+              {users.map((u) => {
+                const isSelected = selectedClinic && selectedClinic.id === u.id;
+                return (
+                  <div 
+                    key={u.id}
+                    onClick={() => {
+                      setSelectedAdminClinicId(u.id);
+                      setShowMobileClinicSelector(false);
+                    }}
+                    className={`p-3.5 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                      isSelected ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-gray-50 border-gray-200 text-gray-800'
+                    }`}
+                  >
+                    <div>
+                      <p className="text-xs font-bold">{u.clinicName}</p>
+                      <p className="text-[11px] opacity-80">PJ: {u.name} — Status: {u.status}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="bg-white border-b border-emerald-100 shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { if(!currentUser) setCurrentView('login'); }}>
-            <div className="w-11 h-11 bg-emerald-700 rounded-xl flex items-center justify-center text-white shadow-md">
-              <Building2 className="w-6 h-6" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+          <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => { if(!currentUser) setCurrentView('login'); }}>
+            <div className="w-9 h-9 sm:w-11 sm:h-11 bg-emerald-700 rounded-xl flex items-center justify-center text-white shadow-md">
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-xl text-emerald-900 tracking-tight">SIPERKLIN</span>
-                <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-200">v2.1</span>
+              <div className="flex items-center space-x-1.5">
+                <span className="font-bold text-base sm:text-xl text-emerald-900 tracking-tight">SIPERKLIN</span>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-200">v2.1</span>
               </div>
-              <p className="text-xs text-gray-500 font-medium">Sistem Informasi Pendaftaran Rekomendasi Klinik Terpadu</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 font-medium hidden xs:block">Sistem Informasi Pendaftaran Rekomendasi Klinik</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             {currentUser && (
-              <button onClick={() => { fetchProfiles(); showNotification('Data berhasil disinkronkan.'); }} disabled={isRefreshing} className="flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition border border-emerald-200 cursor-pointer">
+              <button onClick={() => { fetchProfiles(); showNotification('Data berhasil disinkronkan.'); }} disabled={isRefreshing} className="flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition border border-emerald-200 cursor-pointer">
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span>{isRefreshing ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
+                <span className="hidden sm:inline">Sinkronkan</span>
               </button>
             )}
 
             {currentUser ? (
-              <div className="flex items-center space-x-3">
-                <div className="text-right hidden sm:block">
+              <div className="flex items-center space-x-2">
+                <div className="text-right hidden md:block">
                   <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
-                  <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : `${currentUser.clinicName} (${currentUser.clinicType})`}</p>
+                  <p className="text-xs text-emerald-600 font-medium">{currentUser.role === 'admin' ? 'Administrator Bidang Yankes' : currentUser.clinicName}</p>
                 </div>
-                <button onClick={handleLogout} className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-red-200 cursor-pointer">
+                <button onClick={handleLogout} className="flex items-center space-x-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-red-200 cursor-pointer">
                   <LogOut className="w-4 h-4" />
-                  <span>Keluar</span>
+                  <span className="hidden xs:inline">Keluar</span>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center space-x-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Dinas Kesehatan Kabupaten Badung</span>
+              <div className="flex items-center space-x-1.5 text-[11px] text-emerald-800 font-medium bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span className="hidden sm:inline">Dinas Kesehatan Badung</span>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <main className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <main className="flex-grow flex items-center justify-center p-3 sm:p-6 lg:p-8">
         {!currentUser && (
           <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-emerald-100">
-            <div className="lg:col-span-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 p-8 sm:p-12 text-white flex flex-col justify-between">
+            <div className="lg:col-span-5 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 p-6 sm:p-12 text-white flex flex-col justify-between">
               <div>
-                <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
-                  <Building2 className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 sm:mb-6 border border-white/20">
+                  <Building2 className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SIPERKLIN YANKES</h1>
-                <p className="text-emerald-100 text-sm leading-relaxed mb-6">
+                <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight mb-2 sm:mb-3">SIPERKLIN YANKES</h1>
+                <p className="text-emerald-100 text-xs sm:text-sm leading-relaxed mb-4">
                   Portal pengurusan rekomendasi perizinan klinik Pratama dan Utama dengan persyaratan lengkap dokumen resmi.
                 </p>
               </div>
-              <div className="pt-6 border-t border-emerald-700/60 text-xs text-emerald-200">
+              <div className="pt-4 border-t border-emerald-700/60 text-[11px] sm:text-xs text-emerald-200">
                 Bidang Pelayanan Kesehatan Dinas Kesehatan Kabupaten Badung
               </div>
             </div>
 
-            <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center">
-              <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-8 max-w-sm">
-                <button onClick={() => setAuthTab('login')} className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition cursor-pointer ${authTab === 'login' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500'}`}>Masuk Akun</button>
-                <button onClick={() => setAuthTab('register')} className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition cursor-pointer ${authTab === 'register' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500'}`}>Pendaftaran Baru</button>
+            <div className="lg:col-span-7 p-6 sm:p-12 flex flex-col justify-center">
+              <div className="flex bg-gray-100 p-1 rounded-xl sm:rounded-2xl mb-6 sm:mb-8 max-w-sm">
+                <button onClick={() => setAuthTab('login')} className={`flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition cursor-pointer ${authTab === 'login' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500'}`}>Masuk Akun</button>
+                <button onClick={() => setAuthTab('register')} className={`flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition cursor-pointer ${authTab === 'register' ? 'bg-white text-emerald-900 shadow-sm' : 'text-gray-500'}`}>Pendaftaran Baru</button>
               </div>
 
               {authTab === 'login' && (
-                <form onSubmit={handleLogin} className="space-y-5">
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">Selamat Datang Kembali</h2>
+                <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Selamat Datang Kembali</h2>
                   {loginError && <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl flex items-center space-x-2"><AlertCircle className="w-4 h-4 flex-shrink-0" /><span>{loginError}</span></div>}
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Username / Email / No. Telp</label>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 sm:mb-2">Username / Email / No. Telp</label>
                     <input type="text" required value={loginInput} onChange={(e) => setLoginInput(e.target.value)} placeholder="yankesbadung / 081234567890" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Password</label>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 sm:mb-2">Password</label>
                     <input type="password" required value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
-                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
+                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 cursor-pointer text-sm">
                     <span>Masuk Sekarang</span><ArrowRight className="w-4 h-4" />
                   </button>
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
@@ -661,44 +700,44 @@ export default function App() {
               )}
 
               {authTab === 'register' && (
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">Pendaftaran Akun Klinik</h2>
+                <form onSubmit={handleRegister} className="space-y-3 sm:space-y-4">
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Pendaftaran Akun Klinik</h2>
                   {regSuccess && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-xl"><span>{regSuccess}</span></div>}
                    
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Pemohon</label>
-                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Dr. Nama & Gelar" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Dr. Nama & Gelar" className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Klinik</label>
-                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama ..." className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regClinicName} onChange={(e) => setRegClinicName(e.target.value)} placeholder="Klinik Pratama ..." className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Jenis Klinik</label>
-                    <select value={regClinicType} onChange={(e) => setRegClinicType(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm cursor-pointer">
+                    <select value={regClinicType} onChange={(e) => setRegClinicType(e.target.value)} className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm cursor-pointer">
                       <option value="Klinik Pratama">Klinik Pratama</option>
                       <option value="Klinik Utama">Klinik Utama</option>
                     </select>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Email</label>
-                      <input type="email" required value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="email@klinik.com" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="email" required value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="email@klinik.com" className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">No. WhatsApp</label>
-                      <input type="text" required value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="081234567890" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                      <input type="text" required value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="081234567890" className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Password</label>
-                    <input type="password" required value={regPassword} onChange={(e) => setRegPassword(e.target.value)} placeholder="Minimal 6 karakter" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                    <input type="password" required value={regPassword} onChange={(e) => setRegPassword(e.target.value)} placeholder="Minimal 6 karakter" className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
                   </div>
-                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition cursor-pointer">Daftar Sekarang</button>
+                  <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition cursor-pointer text-sm">Daftar Sekarang</button>
                 </form>
               )}
             </div>
@@ -706,42 +745,42 @@ export default function App() {
         )}
 
         {currentUser && currentUser.role !== 'admin' && (
-          <div className="w-full max-w-6xl space-y-6">
-            <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="w-full max-w-6xl space-y-5">
+            <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-5 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <span className="bg-emerald-700 text-emerald-100 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-600">Dashboard Pemohon ({currentUser.clinicType})</span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">{currentUser.clinicName}</h1>
-                <p className="text-emerald-100 text-sm mt-1">PJ: {currentUser.name} | WhatsApp: {currentUser.phone}</p>
+                <span className="bg-emerald-700 text-emerald-100 text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-600">Dashboard Pemohon ({currentUser.clinicType})</span>
+                <h1 className="text-xl sm:text-3xl font-extrabold mt-2">{currentUser.clinicName}</h1>
+                <p className="text-emerald-100 text-xs sm:text-sm mt-0.5">PJ: {currentUser.name} | WA: {currentUser.phone}</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20">
-                <p className="text-xs text-emerald-200 font-medium">Status Pengajuan</p>
-                <p className="text-sm font-bold flex items-center space-x-1.5 mt-0.5">
-                  <Clock className="w-4 h-4 text-amber-300" />
+              <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/25">
+                <p className="text-[10px] sm:text-xs text-emerald-200 font-medium">Status Pengajuan</p>
+                <p className="text-xs sm:text-sm font-bold flex items-center space-x-1.5 mt-0.5">
+                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 flex-shrink-0" />
                   <span>{currentUser.status}</span>
                 </p>
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-sm border border-amber-200 p-6 sm:p-8 bg-amber-50/30 space-y-6">
+            <div className="bg-white rounded-3xl shadow-sm border border-amber-200 p-5 sm:p-8 bg-amber-50/30 space-y-5">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <div className="flex items-center space-x-2 text-amber-800 font-bold mb-1">
-                    <AlertTriangle className="w-5 h-5 text-amber-600" />
-                    <h2>Menu Perbaikan / Tindak Lanjut Setelah Visitasi Lapangan</h2>
+                    <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0" />
+                    <h2 className="text-sm sm:text-base">Menu Perbaikan / Tindak Lanjut Setelah Visitasi Lapangan</h2>
                   </div>
                   <p className="text-xs text-gray-600">
                     Jika tim Dinas Kesehatan telah melakukan visitasi dan memberikan catatan perbaikan, silakan unggah dokumen/berkas perbaikan Anda di sini (PDF, maksimal 2 MB).
                   </p>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 w-full sm:w-auto">
                   {currentUser.visitRevision?.name && currentUser.visitRevision.name !== 'Belum diunggah' && (
-                    <button onClick={() => setPreviewDoc({ title: 'Berkas Perbaikan Visitasi', name: currentUser.visitRevision.name, url: currentUser.visitRevision.url, status: currentUser.visitRevision.status, note: currentUser.visitRevision.note })} className="text-xs bg-white text-emerald-700 border border-emerald-300 px-3 py-2 rounded-xl font-bold flex items-center space-x-1 cursor-pointer">
-                      <Eye className="w-3.5 h-3.5" /><span>Lihat Berkas</span>
+                    <button onClick={() => setPreviewDoc({ title: 'Berkas Perbaikan Visitasi', name: currentUser.visitRevision.name, url: currentUser.visitRevision.url, status: currentUser.visitRevision.status, note: currentUser.visitRevision.note })} className="text-xs bg-white text-emerald-700 border border-emerald-300 px-3 py-2.5 rounded-xl font-bold flex items-center space-x-1 cursor-pointer flex-shrink-0">
+                      <Eye className="w-3.5 h-3.5" /><span>Lihat</span>
                     </button>
                   )}
-                  <label className="cursor-pointer bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow transition flex items-center space-x-1.5">
-                    <Upload className="w-4 h-4" />
-                    <span>{currentUser.visitRevision?.name === 'Belum diunggah' ? 'Unggah Berkas Perbaikan' : 'Ganti Berkas Perbaikan'}</span>
+                  <label className="cursor-pointer bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-1.5 flex-grow sm:flex-grow-0">
+                    <Upload className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{currentUser.visitRevision?.name === 'Belum diunggah' ? 'Unggah Berkas Perbaikan' : 'Ganti Berkas Perbaikan'}</span>
                     <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) handleUploadVisitRevision(f); }} />
                   </label>
                 </div>
@@ -762,8 +801,8 @@ export default function App() {
 
               <div className="pt-4 border-t border-amber-200/60">
                 <div className="flex items-center space-x-2 text-emerald-900 font-bold mb-1">
-                  <Video className="w-5 h-5 text-emerald-700" />
-                  <h3>Link Video Dokumentasi / Tinjauan Lapangan</h3>
+                  <Video className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-700 flex-shrink-0" />
+                  <h3 className="text-sm sm:text-base">Link Video Dokumentasi / Tinjauan Lapangan</h3>
                 </div>
                 <p className="text-xs text-gray-600 mb-3">
                   Masukkan tautan video (contoh: YouTube, Google Drive, atau tautan cloud lainnya) terkait profil klinik atau video pendukung peninjauan.
@@ -779,7 +818,7 @@ export default function App() {
                   <button 
                     type="button"
                     onClick={handleSaveVideoLink}
-                    className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition cursor-pointer flex items-center justify-center space-x-1"
+                    className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition cursor-pointer flex items-center justify-center space-x-1 flex-shrink-0"
                   >
                     <Check className="w-4 h-4" />
                     <span>Simpan Link Video</span>
@@ -797,24 +836,24 @@ export default function App() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8">
-              <div className="mb-6 flex justify-between items-center">
+            <div className="bg-white rounded-3xl shadow-sm border border-emerald-100 p-5 sm:p-8">
+              <div className="mb-5 flex justify-between items-center">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Daftar 28 Berkas Persyaratan Perizinan Klinik</h2>
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900">Daftar 28 Berkas Persyaratan Perizinan Klinik</h2>
                   <p className="text-xs text-gray-500">Silakan unggah seluruh berkas PDF persyaratan di bawah ini (maksimal 2 MB per file).</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-1">
                 {LIST_28_DOKUMEN.map((item) => {
                   const docInfo = currentUser.documents[item.key] || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi', note: '', verifiedAt: '-' };
                   const isUploading = uploadingDocKey === item.key;
                   return (
                     <div key={item.key} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-300 transition">
                       <div>
-                        <div className="flex justify-between items-start mb-1.5">
+                        <div className="flex justify-between items-start mb-1.5 gap-2">
                           <h3 className="font-bold text-gray-800 text-xs sm:text-sm">{item.title}</h3>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${
                             docInfo.status === 'Sudah Terverifikasi' ? 'bg-emerald-100 text-emerald-800' :
                             docInfo.status === 'Catatan Perbaikan' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
                           }`}>
@@ -823,13 +862,13 @@ export default function App() {
                         </div>
                         <p className="text-[11px] text-gray-500 mb-2">{item.desc}</p>
 
-                        <div className="py-1.5 px-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2 truncate">
+                        <div className="py-2 px-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2 truncate pr-2">
                             <FileText className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                             <span className="text-xs text-gray-700 font-medium truncate">{docInfo.name}</span>
                           </div>
                           {docInfo.name !== 'Belum diunggah' && (
-                            <button onClick={() => setPreviewDoc({ title: item.title, name: docInfo.name, url: docInfo.url, status: docInfo.status, note: docInfo.note })} className="text-xs text-emerald-700 font-bold hover:underline flex items-center space-x-1 ml-2 cursor-pointer">
+                            <button onClick={() => setPreviewDoc({ title: item.title, name: docInfo.name, url: docInfo.url, status: docInfo.status, note: docInfo.note })} className="text-xs text-emerald-700 font-bold hover:underline flex items-center space-x-1 cursor-pointer flex-shrink-0">
                               <Eye className="w-3 h-3" /><span>Lihat</span>
                             </button>
                           )}
@@ -863,41 +902,55 @@ export default function App() {
           </div>
         )}
 
-      {/* DASHBOARD ADMIN LENGKAP */}
+      {/* DASHBOARD ADMIN RESPONSIF UNTUK HP DAN DESKTOP */}
         {currentUser && currentUser.role === 'admin' && (
-          <div className="w-full max-w-7xl space-y-6">
-            <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="w-full max-w-7xl space-y-5">
+            <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-5 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <span className="bg-emerald-800 text-emerald-200 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-700">Panel Administrator</span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Verifikasi Berkas & Kelayakan Klinik</h1>
-                <p className="text-gray-300 text-xs mt-1">Dinas Kesehatan Kabupaten Badung • {currentDateFormatted}</p>
+                <span className="bg-emerald-800 text-emerald-200 text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-700">Panel Administrator</span>
+                <h1 className="text-xl sm:text-3xl font-extrabold mt-1.5">Verifikasi Berkas & Kelayakan Klinik</h1>
+                <p className="text-gray-300 text-[11px] sm:text-xs mt-0.5">Dinas Kesehatan Kabupaten Badung • {currentDateFormatted}</p>
               </div>
-              <button onClick={handleExportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl font-bold text-xs shadow-lg transition flex items-center space-x-2 border border-emerald-500 cursor-pointer">
+              <button onClick={handleExportExcel} className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs shadow-lg transition flex items-center justify-center space-x-2 border border-emerald-500 cursor-pointer">
                 <FileSpreadsheet className="w-4 h-4" />
                 <span>Unduh Rekap Excel (.xlsx)</span>
               </button>
             </div>
 
             {/* KARTU STATISTIK */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              <div className="bg-white rounded-3xl p-5 shadow-sm border border-emerald-100 flex items-center space-x-4">
-                <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center font-bold text-xl">{totalPengajuan}</div>
-                <div><p className="text-xs font-bold text-gray-400 uppercase">Total Pengajuan</p><p className="text-lg font-extrabold text-gray-900">{totalPengajuan} Klinik</p></div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-emerald-100 flex items-center space-x-3 sm:space-x-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 text-emerald-700 rounded-xl sm:rounded-2xl flex items-center justify-center font-bold text-base sm:text-xl flex-shrink-0">{totalPengajuan}</div>
+                <div><p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase">Total Pengajuan</p><p className="text-base sm:text-lg font-extrabold text-gray-900">{totalPengajuan} Klinik</p></div>
               </div>
-              <div className="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 flex items-center space-x-4">
-                <div className="w-14 h-14 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center font-bold text-xl">{sedangDiperiksaCount}</div>
-                <div><p className="text-xs font-bold text-gray-400 uppercase">Sedang Diperiksa</p><p className="text-lg font-extrabold text-amber-700">{sedangDiperiksaCount} Klinik</p></div>
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-amber-100 flex items-center space-x-3 sm:space-x-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-amber-50 text-amber-700 rounded-xl sm:rounded-2xl flex items-center justify-center font-bold text-base sm:text-xl flex-shrink-0">{sedangDiperiksaCount}</div>
+                <div><p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase">Sedang Diperiksa</p><p className="text-base sm:text-lg font-extrabold text-amber-700">{sedangDiperiksaCount} Klinik</p></div>
               </div>
-              <div className="bg-white rounded-3xl p-5 shadow-sm border border-teal-100 flex items-center space-x-4">
-                <div className="w-14 h-14 bg-teal-50 text-teal-700 rounded-2xl flex items-center justify-center font-bold text-xl">{sudahTerverifikasiCount}</div>
-                <div><p className="text-xs font-bold text-gray-400 uppercase">Sudah Terverifikasi</p><p className="text-lg font-extrabold text-teal-700">{sudahTerverifikasiCount} Klinik</p></div>
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-teal-100 flex items-center space-x-3 sm:space-x-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-teal-50 text-teal-700 rounded-xl sm:rounded-2xl flex items-center justify-center font-bold text-base sm:text-xl flex-shrink-0">{sudahTerverifikasiCount}</div>
+                <div><p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase">Sudah Terverifikasi</p><p className="text-base sm:text-lg font-extrabold text-teal-700">{sudahTerverifikasiCount} Klinik</p></div>
               </div>
             </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* TOMBOL AKSI CEPAT PILIH KLINIK (KHUSUS TAMPILAN HP) */}
+          <div className="block lg:hidden">
+            <button 
+              onClick={() => setShowMobileClinicSelector(true)}
+              className="w-full bg-emerald-700 text-white font-bold p-3.5 rounded-2xl shadow-md flex items-center justify-between text-xs cursor-pointer"
+            >
+              <div className="flex items-center space-x-2 truncate pr-2">
+                <Building2 className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">Klinik Dipilih: <strong>{selectedClinic ? selectedClinic.clinicName : 'Pilih Klinik'}</strong></span>
+              </div>
+              <span className="bg-emerald-900 text-emerald-100 px-2.5 py-1 rounded-lg text-[10px] flex-shrink-0">Ganti Klinik ▾</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
             
-            {/* SIDEBAR DAFTAR KLINIK */}
-            <div className="lg:col-span-4 bg-white rounded-3xl shadow-sm border border-emerald-100 p-5 flex flex-col sticky top-28">
+            {/* SIDEBAR DESKTOP (DISEMBUNYIKAN DI HP) */}
+            <div className="hidden lg:flex lg:col-span-4 bg-white rounded-3xl shadow-sm border border-emerald-100 p-5 flex-col sticky top-24">
               <div className="mb-4 pb-3 border-b border-gray-100 flex justify-between items-center">
                 <h2 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider">Pilih Klinik Pemohon</h2>
                 <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200">
@@ -948,47 +1001,47 @@ export default function App() {
             </div>
 
             {/* KONTEN UTAMA VERIFIKASI KLINIK TERPILIH */}
-            <div className="lg:col-span-8 bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8 space-y-6">
+            <div className="lg:col-span-8 bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-emerald-100 p-4 sm:p-8 space-y-5">
               {selectedClinic ? (
                 <>
-                  <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-5 border border-emerald-200 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="space-y-1">
+                  <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-4 sm:p-5 border border-emerald-200 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <div className="space-y-1 truncate">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xl font-extrabold text-emerald-950">{selectedClinic.clinicName}</h2>
-                        <span className="bg-teal-200 text-teal-900 text-[11px] px-2.5 py-0.5 rounded-full font-bold">{selectedClinic.clinicType || 'Klinik Pratama'}</span>
+                        <h2 className="text-base sm:text-xl font-extrabold text-emerald-950 truncate">{selectedClinic.clinicName}</h2>
+                        <span className="bg-teal-200 text-teal-900 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-bold">{selectedClinic.clinicType || 'Klinik Pratama'}</span>
                       </div>
-                      <p className="text-xs text-gray-700">
-                        <strong>PJ:</strong> {selectedClinic.name} &bull; <strong>Email:</strong> {selectedClinic.email} &bull; <strong>WA:</strong> {selectedClinic.phone}
+                      <p className="text-[11px] sm:text-xs text-gray-700 truncate">
+                        <strong>PJ:</strong> {selectedClinic.name} &bull; <strong>WA:</strong> {selectedClinic.phone}
                       </p>
                     </div>
 
-                    <button onClick={() => handleDeleteUser(selectedClinic.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3.5 py-2 rounded-xl text-xs font-bold border border-red-200 flex items-center space-x-1 cursor-pointer transition">
-                      <Trash2 className="w-4 h-4" /><span>Hapus Pemohon</span>
+                    <button onClick={() => handleDeleteUser(selectedClinic.id)} className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold border border-red-200 flex items-center space-x-1 cursor-pointer transition flex-shrink-0">
+                      <Trash2 className="w-3.5 h-3.5" /><span>Hapus Pemohon</span>
                     </button>
                   </div>
 
-                  <div className="flex border-b border-gray-200">
+                  <div className="flex border-b border-gray-200 overflow-x-auto">
                     <button 
                       onClick={() => setAdminActiveTab('documents')}
-                      className={`pb-3 px-5 text-xs font-extrabold transition border-b-2 cursor-pointer flex items-center space-x-1.5 ${
+                      className={`pb-2.5 sm:pb-3 px-3 sm:px-5 text-xs font-extrabold transition border-b-2 cursor-pointer flex items-center space-x-1 flex-shrink-0 ${
                         adminActiveTab === 'documents' 
                           ? 'border-emerald-700 text-emerald-800' 
                           : 'border-transparent text-gray-400 hover:text-gray-700'
                       }`}
                     >
                       <FileCheck2 className="w-4 h-4" />
-                      <span>Verifikasi 28 Dokumen Syarat</span>
+                      <span>Verifikasi 28 Dokumen</span>
                     </button>
                     <button 
                       onClick={() => setAdminActiveTab('visit')}
-                      className={`pb-3 px-5 text-xs font-extrabold transition border-b-2 cursor-pointer flex items-center space-x-1.5 ${
+                      className={`pb-2.5 sm:pb-3 px-3 sm:px-5 text-xs font-extrabold transition border-b-2 cursor-pointer flex items-center space-x-1 flex-shrink-0 ${
                         adminActiveTab === 'visit' 
                           ? 'border-emerald-700 text-emerald-800' 
                           : 'border-transparent text-gray-400 hover:text-gray-700'
                       }`}
                     >
                       <Video className="w-4 h-4" />
-                      <span>Verifikasi Visitasi & Video Lapangan</span>
+                      <span>Visitasi & Video</span>
                     </button>
                   </div>
 
@@ -997,7 +1050,7 @@ export default function App() {
                       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-200">
                         <span className="text-xs font-bold text-gray-700">Daftar Berkas Persyaratan (1 s.d 28)</span>
                         <span className="text-xs font-extrabold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-xl">
-                          {Object.values(selectedClinic.documents || {}).filter(d => d.status === 'Sudah Terverifikasi').length} dari 28 Terverifikasi
+                          {Object.values(selectedClinic.documents || {}).filter(d => d.status === 'Sudah Terverifikasi').length}/28 Valid
                         </span>
                       </div>
 
@@ -1008,33 +1061,33 @@ export default function App() {
                           const isRevision = docVal.status === 'Catatan Perbaikan';
 
                           return (
-                            <div key={listItem.key} className={`rounded-2xl p-4 border transition flex flex-col justify-between ${
+                            <div key={listItem.key} className={`rounded-2xl p-3.5 sm:p-4 border transition flex flex-col justify-between ${
                               isVerified ? 'bg-emerald-50/30 border-emerald-200' : isRevision ? 'bg-red-50/30 border-red-200' : 'bg-gray-50 border-gray-200'
                             }`}>
                               <div>
-                                <div className="flex justify-between items-start mb-1.5">
+                                <div className="flex justify-between items-start mb-1.5 gap-1">
                                   <span className="text-[11px] font-extrabold text-gray-900 leading-tight" title={listItem.title}>{listItem.title}</span>
-                                  <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold flex-shrink-0 ml-1 ${
+                                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 ${
                                     isVerified ? 'bg-emerald-100 text-emerald-900' : isRevision ? 'bg-red-100 text-red-900' : 'bg-amber-100 text-amber-900'
                                   }`}>{docVal.status}</span>
                                 </div>
 
-                                <p className="text-[11px] font-medium text-gray-600 truncate mb-2" title={docVal.name}>
-                                  File: <strong className="text-gray-900">{docVal.name}</strong>
+                                <p className="text-[11px] font-medium text-gray-600 truncate mb-2">
+                                  File: <strong className="text-gray-900 truncate">{docVal.name}</strong>
                                 </p>
                                 
                                 <div className="flex items-center justify-between mb-2.5">
                                   {docVal.name !== 'Belum diunggah' ? (
-                                    <button onClick={() => setPreviewDoc({ title: listItem.title, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: selectedClinic.clinicName })} className="text-xs bg-white text-emerald-800 border border-emerald-300 px-3 py-1 rounded-lg font-bold hover:bg-emerald-50 flex items-center space-x-1 cursor-pointer shadow-xs">
+                                    <button onClick={() => setPreviewDoc({ title: listItem.title, name: docVal.name, url: docVal.url, status: docVal.status, note: docVal.note, clinic: selectedClinic.clinicName })} className="text-xs bg-white text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-lg font-bold hover:bg-emerald-50 flex items-center space-x-1 cursor-pointer shadow-xs">
                                       <Eye className="w-3.5 h-3.5" /><span>Pratinjau PDF</span>
                                     </button>
                                   ) : (
-                                    <span className="text-[11px] text-gray-400 italic">Belum diunggah pemohon</span>
+                                    <span className="text-[11px] text-gray-400 italic">Belum diunggah</span>
                                   )}
-                                  <span className="text-[10px] text-gray-500 font-medium">{docVal.verifiedAt !== '-' ? `Verif: ${docVal.verifiedAt}` : ''}</span>
+                                  <span className="text-[10px] text-gray-500">{docVal.verifiedAt !== '-' ? `Verif: ${docVal.verifiedAt}` : ''}</span>
                                 </div>
 
-                                <div className="space-y-2 pt-2.5 border-t border-gray-200">
+                                <div className="space-y-2 pt-2 border-t border-gray-200">
                                   <div className="grid grid-cols-2 gap-1.5">
                                     <button
                                       type="button"
@@ -1070,9 +1123,9 @@ export default function App() {
                   )}
 
                   {adminActiveTab === 'visit' && (
-                    <div className="space-y-6 animate-fadeIn bg-gray-50/80 p-5 rounded-3xl border border-gray-200">
+                    <div className="space-y-5 animate-fadeIn bg-gray-50/80 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200">
                       <div>
-                        <h3 className="text-sm font-extrabold text-gray-900 mb-1">Verifikasi Tindak Lanjut Visitasi Lapangan</h3>
+                        <h3 className="text-xs sm:text-sm font-extrabold text-gray-900 mb-1">Verifikasi Tindak Lanjut Visitasi Lapangan</h3>
                         <p className="text-xs text-gray-500">Periksa dokumen koreksi hasil kunjungan lapangan serta tautan video dokumentasi klinik.</p>
                       </div>
 
@@ -1087,8 +1140,8 @@ export default function App() {
                         </div>
 
                         {selectedClinic.visitRevision?.name && selectedClinic.visitRevision.name !== 'Belum diunggah' ? (
-                          <div className="flex items-center justify-between bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
-                            <span className="text-xs font-medium text-gray-700 truncate">{selectedClinic.visitRevision.name}</span>
+                          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 gap-2">
+                            <span className="text-xs font-medium text-gray-700 truncate max-w-full xs:max-w-[200px]">{selectedClinic.visitRevision.name}</span>
                             <button 
                               onClick={() => setPreviewDoc({ title: 'Perbaikan Visitasi — ' + selectedClinic.clinicName, name: selectedClinic.visitRevision.name, url: selectedClinic.visitRevision.url, status: selectedClinic.visitRevision.status, note: selectedClinic.visitRevision.note })} 
                               className="text-xs bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg font-bold flex items-center space-x-1 cursor-pointer shadow-xs"
@@ -1109,7 +1162,7 @@ export default function App() {
                               onChange={(e) => setVisitNoteInput(e.target.value)}
                               className="w-full text-xs bg-white border border-gray-300 rounded-xl px-3 py-2.5 focus:ring-1 focus:ring-emerald-500"
                             />
-                            <div className="flex space-x-2">
+                            <div className="flex flex-col xs:flex-row gap-2">
                               <button 
                                 type="button"
                                 onClick={() => handleAdminUpdateVisitStatus(selectedClinic.id, 'Sudah Terverifikasi')}
@@ -1134,9 +1187,9 @@ export default function App() {
                       <div className="bg-white p-4 rounded-2xl border border-gray-200 space-y-2">
                         <span className="text-xs font-bold text-gray-800">Tautan Video Dokumentasi Lapangan</span>
                         {selectedClinic.videoLink ? (
-                          <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-200">
-                            <span className="text-xs text-emerald-900 font-medium truncate max-w-[280px] sm:max-w-md">{selectedClinic.videoLink}</span>
-                            <a href={selectedClinic.videoLink} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg font-bold flex items-center space-x-1 shadow-xs">
+                          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-200 gap-2">
+                            <span className="text-xs text-emerald-900 font-medium truncate max-w-full xs:max-w-[220px]">{selectedClinic.videoLink}</span>
+                            <a href={selectedClinic.videoLink} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg font-bold flex items-center space-x-1 shadow-xs flex-shrink-0">
                               <span>Buka Video</span>
                               <ExternalLink className="w-3 h-3" />
                             </a>
@@ -1149,7 +1202,7 @@ export default function App() {
                   )}
                 </>
               ) : (
-                <div className="text-center py-20 text-gray-400 text-xs">Pilih salah satu klinik pada panel di samping untuk mulai memverifikasi berkas.</div>
+                <div className="text-center py-20 text-gray-400 text-xs">Pilih salah satu klinik pada panel di atas untuk mulai memverifikasi berkas.</div>
               )}
             </div>
 
@@ -1158,7 +1211,7 @@ export default function App() {
       )}
       </main>
 
-      {/* MODAL PRATINJAU PDF DENGAN DUKUNGAN LAYAR PENUH DI MOBILE */}
+      {/* MODAL PRATINJAU PDF */}
       {previewDoc && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
           <div className="bg-white rounded-3xl max-w-4xl w-full h-[90vh] p-4 sm:p-6 shadow-2xl border border-emerald-100 flex flex-col justify-between">
@@ -1176,16 +1229,16 @@ export default function App() {
             <div className="my-3 flex-grow bg-gray-100 rounded-2xl overflow-y-auto border border-gray-200 relative flex flex-col">
               {previewDoc.url ? (
                 <>
-                  <div className="bg-emerald-900 text-white text-[11px] p-2 px-4 flex justify-between items-center flex-shrink-0">
-                    <span>Geser ke bawah atau buka layar penuh untuk melihat seluruh halaman.</span>
+                  <div className="bg-emerald-900 text-white text-[11px] p-2 px-3 sm:px-4 flex justify-between items-center flex-shrink-0 gap-2">
+                    <span className="truncate">Geser atau buka layar penuh untuk melihat seluruh halaman.</span>
                     <a 
                       href={previewDoc.url} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-bold flex items-center space-x-1"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-bold flex items-center space-x-1 flex-shrink-0"
                     >
                       <Download className="w-3 h-3" />
-                      <span>Buka Layar Penuh</span>
+                      <span>Layar Penuh</span>
                     </a>
                   </div>
                   
