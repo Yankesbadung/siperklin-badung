@@ -137,7 +137,6 @@ export default function App() {
   const [visitNoteInput, setVisitNoteInput] = useState('');
   const [adminActiveTab, setAdminActiveTab] = useState('documents');
 
-  // State untuk Notifikasi Pop-up Global
   const [notification, setNotification] = useState(null);
 
   const showNotification = (message, type = 'success') => {
@@ -418,7 +417,6 @@ export default function App() {
     }
   };
 
-  // Fungsi Admin Memverifikasi Dokumen dengan Notifikasi Pop-up
   const handleAdminUpdateDocStatus = async (userId, docKey, newStatus, newNote) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
@@ -463,7 +461,6 @@ export default function App() {
     showNotification(`Status dokumen diperbarui: ${newStatus}`);
   };
 
-  // Fungsi Admin Memverifikasi Perbaikan Visitasi dengan Notifikasi Pop-up
   const handleAdminUpdateVisitStatus = async (userId, newStatus) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser || !targetUser.visitRevision || targetUser.visitRevision.name === 'Belum diunggah') {
@@ -866,7 +863,7 @@ export default function App() {
           </div>
         )}
 
-      {/* DASHBOARD ADMIN DENGAN NOTIFIKASI POP-UP SAAT VERIFIKASI / CATATAN */}
+      {/* DASHBOARD ADMIN LENGKAP */}
         {currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
             <div className="bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -897,7 +894,6 @@ export default function App() {
               </div>
             </div>
 
-          {/* UTAMA: KOLOM KIRI (DAFTAR KLINIK) & KOLOM KANAN (AREA VERIFIKASI) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             {/* SIDEBAR DAFTAR KLINIK */}
@@ -955,7 +951,6 @@ export default function App() {
             <div className="lg:col-span-8 bg-white rounded-3xl shadow-sm border border-emerald-100 p-6 sm:p-8 space-y-6">
               {selectedClinic ? (
                 <>
-                  {/* HEADER INFO & HAPUS */}
                   <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-5 border border-emerald-200 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -972,7 +967,6 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* TAB MENU VERIFIKASI */}
                   <div className="flex border-b border-gray-200">
                     <button 
                       onClick={() => setAdminActiveTab('documents')}
@@ -998,7 +992,6 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* KONTEN TAB 1: 28 DOKUMEN */}
                   {adminActiveTab === 'documents' && (
                     <div className="space-y-4 animate-fadeIn">
                       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-200">
@@ -1076,7 +1069,6 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* KONTEN TAB 2: VISITASI & VIDEO */}
                   {adminActiveTab === 'visit' && (
                     <div className="space-y-6 animate-fadeIn bg-gray-50/80 p-5 rounded-3xl border border-gray-200">
                       <div>
@@ -1084,7 +1076,6 @@ export default function App() {
                         <p className="text-xs text-gray-500">Periksa dokumen koreksi hasil kunjungan lapangan serta tautan video dokumentasi klinik.</p>
                       </div>
 
-                      {/* Berkas Perbaikan Visitasi */}
                       <div className="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-bold text-gray-800">Berkas PDF Perbaikan Visitasi</span>
@@ -1140,7 +1131,6 @@ export default function App() {
                         )}
                       </div>
 
-                      {/* Tautan Video Lapangan */}
                       <div className="bg-white p-4 rounded-2xl border border-gray-200 space-y-2">
                         <span className="text-xs font-bold text-gray-800">Tautan Video Dokumentasi Lapangan</span>
                         {selectedClinic.videoLink ? (
@@ -1168,25 +1158,45 @@ export default function App() {
       )}
       </main>
 
+      {/* MODAL PRATINJAU PDF DENGAN DUKUNGAN LAYAR PENUH DI MOBILE */}
       {previewDoc && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full h-[85vh] p-6 shadow-2xl border border-emerald-100 flex flex-col justify-between">
-            <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white rounded-3xl max-w-4xl w-full h-[90vh] p-4 sm:p-6 shadow-2xl border border-emerald-100 flex flex-col justify-between">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
               <div>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Pratinjau PDF Langsung</span>
-                <h3 className="text-lg font-extrabold text-gray-900 mt-1">{previewDoc.title}</h3>
-                {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic} — File: {previewDoc.name}</p>}
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Pratinjau Dokumen PDF</span>
+                <h3 className="text-sm sm:text-lg font-extrabold text-gray-900 mt-1 truncate max-w-xs sm:max-w-xl">{previewDoc.title}</h3>
+                {previewDoc.clinic && <p className="text-xs text-gray-500">Klinik: {previewDoc.clinic}</p>}
               </div>
-              <button onClick={() => setPreviewDoc(null)} className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition cursor-pointer">
+              <button onClick={() => setPreviewDoc(null)} className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition cursor-pointer flex-shrink-0">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="my-4 flex-grow bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 flex items-center justify-center">
+            <div className="my-3 flex-grow bg-gray-100 rounded-2xl overflow-y-auto border border-gray-200 relative flex flex-col">
               {previewDoc.url ? (
-                <iframe src={`${previewDoc.url}#toolbar=0`} title="PDF Preview" className="w-full h-full" />
+                <>
+                  <div className="bg-emerald-900 text-white text-[11px] p-2 px-4 flex justify-between items-center flex-shrink-0">
+                    <span>Geser ke bawah atau buka layar penuh untuk melihat seluruh halaman.</span>
+                    <a 
+                      href={previewDoc.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-bold flex items-center space-x-1"
+                    >
+                      <Download className="w-3 h-3" />
+                      <span>Buka Layar Penuh</span>
+                    </a>
+                  </div>
+                  
+                  <iframe 
+                    src={`${previewDoc.url}#view=FitH`} 
+                    title="PDF Preview" 
+                    className="w-full flex-grow min-h-[450px]" 
+                  />
+                </>
               ) : (
-                <div className="text-center p-6 text-gray-500">
+                <div className="text-center p-6 text-gray-500 my-auto">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                   <p className="text-sm font-bold">File PDF belum diunggah atau menggunakan file bawaan demo.</p>
                 </div>
@@ -1194,14 +1204,14 @@ export default function App() {
             </div>
 
             {previewDoc.note && (
-              <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800 mb-2">
+              <div className="p-2.5 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800 mb-2 flex-shrink-0">
                 <span className="font-bold">Catatan Perbaikan:</span> {previewDoc.note}
               </div>
             )}
 
-            <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+            <div className="pt-2 border-t border-gray-100 flex justify-between items-center flex-shrink-0">
               <span className="text-xs text-gray-500">Status: <strong className="text-emerald-700">{previewDoc.status}</strong></span>
-              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2.5 rounded-xl text-xs transition cursor-pointer">Tutup</button>
+              <button onClick={() => setPreviewDoc(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2 rounded-xl text-xs transition cursor-pointer">Tutup</button>
             </div>
           </div>
         </div>
