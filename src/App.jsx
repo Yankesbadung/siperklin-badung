@@ -150,7 +150,7 @@ export default function App() {
       setShowPeriodicPopup(true);
       setTimeout(() => {
         setShowPeriodicPopup(false);
-      }, 6000); // Tampil selama 6 detik
+      }, 6000); // Tampil selama 10 detik
     }, intervalTime);
 
     return () => clearInterval(interval);
