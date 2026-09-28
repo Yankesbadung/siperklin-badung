@@ -287,8 +287,7 @@ export default function App() {
     const newId = 'u_' + Date.now();
     const newDocuments = generateInitialDocuments();
     const newVisitRevision = { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi Visitasi', note: '', verifiedAt: '-' };
-    const currentTimestamp = new Date().toISOString();
-
+    const currentTimestamp = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Makassar' }).replace(' ', ' ');
     if (supabase) {
       const { error } = await supabase.from('SIPERKLIN').insert([
         {
