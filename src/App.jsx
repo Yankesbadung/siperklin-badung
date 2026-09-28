@@ -152,7 +152,7 @@ export default function App() {
     if (!supabase) return;
     setIsRefreshing(true);
     try {
-      const { data, error } = await supabase.from('SIPERKLIN').select('id, name, email, phone, clinic_name, clinic_type, password, status, documents, visit_revision, video_link');
+      const { data, error } = await supabase.from('SIPERKLIN').select('id, name, email, phone, clinic_name, clinic_type, password, status, documents, visit_revision, video_link, created_at');
       if (error) {
         console.error('Supabase error:', error.message);
       } else if (data) {
@@ -167,7 +167,8 @@ export default function App() {
           status: item.status || 'Menunggu Verifikasi',
           documents: item.documents || generateInitialDocuments(),
           visitRevision: item.visit_revision || { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi Visitasi', note: '', verifiedAt: '-' },
-          videoLink: item.video_link || ''
+          videoLink: item.video_link || '',
+          created_at: item.created_at || null
         }));
         setUsers(formatted);
 
@@ -271,6 +272,7 @@ export default function App() {
     const newId = 'u_' + Date.now();
     const newDocuments = generateInitialDocuments();
     const newVisitRevision = { name: 'Belum diunggah', url: '', status: 'Menunggu Verifikasi Visitasi', note: '', verifiedAt: '-' };
+    const currentTimestamp = new Date().toISOString();
 
     if (supabase) {
       const { error } = await supabase.from('SIPERKLIN').insert([
@@ -285,7 +287,8 @@ export default function App() {
           status: 'Menunggu Verifikasi',
           documents: newDocuments,
           visit_revision: newVisitRevision,
-          video_link: ''
+          video_link: '',
+          created_at: currentTimestamp
         }
       ]);
       if (error) {
@@ -529,8 +532,23 @@ export default function App() {
 
     const dataToExport = users.map((u, index) => {
       const totalUploaded = Object.values(u.documents || {}).filter(d => d.name !== 'Belum diunggah').length;
+      
+      let formattedRegDate = '-';
+      if (u.created_at) {
+        try {
+          formattedRegDate = new Date(u.created_at).toLocaleDateString('id-ID', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          });
+        } catch {
+          formattedRegDate = u.created_at;
+        }
+      }
+
       return {
         No: index + 1,
+        'Tanggal Pendaftaran': formattedRegDate,
         'Nama Klinik': u.clinicName,
         'Jenis Klinik': u.clinicType || 'Klinik Pratama',
         'Penanggung Jawab': u.name,
@@ -1114,12 +1132,12 @@ export default function App() {
                                     onSaveNote={(text) => handleAdminUpdateDocStatus(selectedClinic.id, listItem.key, docVal.status, text)} 
                                   />
                                 </div>
-                              </div>
                             </div>
-                          );
-                        })}
-                      </div>
+                          </div>
+                        );
+                      })}
                     </div>
+                  </div>
                   )}
 
                   {adminActiveTab === 'visit' && (
@@ -1148,7 +1166,7 @@ export default function App() {
                             >
                               <Eye className="w-3.5 h-3.5" /><span>Lihat Berkas</span>
                             </button>
-                          </div>
+                        </div>
                         ) : (
                           <p className="text-xs text-gray-400 italic">Pemohon belum mengunggah berkas perbaikan visitasi.</p>
                         )}
@@ -1161,7 +1179,7 @@ export default function App() {
                               value={visitNoteInput}
                               onChange={(e) => setVisitNoteInput(e.target.value)}
                               className="w-full text-xs bg-white border border-gray-300 rounded-xl px-3 py-2.5 focus:ring-1 focus:ring-emerald-500"
-                            />
+                          />
                             <div className="flex flex-col xs:flex-row gap-2">
                               <button 
                                 type="button"
@@ -1198,7 +1216,7 @@ export default function App() {
                           <p className="text-xs text-gray-400 italic">Pemohon belum mencantumkan link video.</p>
                         )}
                       </div>
-                    </div>
+                  </div>
                   )}
                 </>
               ) : (
