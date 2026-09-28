@@ -141,11 +141,11 @@ export default function App() {
   const [showMobileClinicSelector, setShowMobileClinicSelector] = useState(false);
   const [notification, setNotification] = useState(null);
 
-  // State untuk animasi pop-up berkala di pojok kanan bawah (muncul tiap 5 menit)
+  // State untuk animasi pop-up berkala di pojok kanan bawah (muncul tiap 1 menit)
   const [showPeriodicPopup, setShowPeriodicPopup] = useState(false);
 
   useEffect(() => {
-    const intervalTime = 5 * 60 * 1000; // 5 menit
+    const intervalTime = 5 * 60 * 1000; // 1 menit
     const interval = setInterval(() => {
       setShowPeriodicPopup(true);
       setTimeout(() => {
