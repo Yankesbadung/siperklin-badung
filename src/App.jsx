@@ -145,7 +145,7 @@ export default function App() {
   const [showPeriodicPopup, setShowPeriodicPopup] = useState(false);
 
   useEffect(() => {
-    const intervalTime = 5 * 60 * 1000; // 1 menit
+    const intervalTime = 1 * 60 * 1000; // 1 menit
     const interval = setInterval(() => {
       setShowPeriodicPopup(true);
       setTimeout(() => {
