@@ -589,16 +589,18 @@ export default function App() {
         </div>
       )}
 
-      {/* ANIMASI POP-UP BERKALA DI POJOK KANAN BAWAH */}
+      {/* ANIMASI POP-UP KARTUN BERGERAK DI POJOK KANAN BAWAH */}
       {showPeriodicPopup && (
-        <div className="fixed bottom-5 right-5 z-50 animate-bounce bg-gradient-to-r from-emerald-700 to-teal-800 text-white p-4 rounded-2xl shadow-2xl border border-emerald-400 max-w-xs flex items-start space-x-3 transition-all duration-500">
-          <div className="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white flex-shrink-0">
-            <Bell className="w-5 h-5 animate-pulse" />
+        <div className="fixed bottom-5 right-5 z-50 animate-bounce duration-1000 bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-800 text-white p-4 rounded-3xl shadow-2xl border-2 border-emerald-300 max-w-xs flex items-start space-x-3 transition-all">
+          <div className="w-11 h-11 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-xl flex-shrink-0 animate-pulse">
+            <span role="img" aria-label="doctor" className="animate-spin" style={{ animationDuration: '3s', display: 'inline-block' }}>
+              👨‍⚕️
+            </span>
           </div>
           <div className="flex-grow">
-            <p className="text-xs font-bold text-emerald-200">Pengingat Sistem SIPERKLIN</p>
+            <p className="text-xs font-extrabold text-emerald-200 uppercase tracking-wide">Pengingat SIPERKLIN</p>
             <p className="text-[11px] text-gray-100 mt-0.5 leading-relaxed">
-              Pastikan kelengkapan berkas dan dokumen persyaratan klinik Anda selalu diperbarui secara berkala.
+              Halo! Yuk, periksa dan perbarui kelengkapan dokumen persyaratan klinik Anda agar proses verifikasi berjalan lancar.
             </p>
           </div>
           <button 
