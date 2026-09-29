@@ -74,6 +74,7 @@ const generateInitialDocuments = () => {
   return docs;
 };
 
+// Komponen NoteInput menggunakan textarea agar catatan lebih luas dilihat
 function NoteInputWithButton({ initialNote, onSaveNote }) {
   const [text, setText] = useState(initialNote || '');
 
@@ -82,22 +83,24 @@ function NoteInputWithButton({ initialNote, onSaveNote }) {
   }, [initialNote]);
 
   return (
-    <div className="flex space-x-1.5 mt-2">
-      <input 
-        type="text" 
-        placeholder="Tulis catatan perbaikan dokumen..." 
+    <div className="space-y-2 mt-2">
+      <textarea 
+        rows="2"
+        placeholder="Tulis catatan perbaikan dokumen secara detail di sini..." 
         value={text} 
         onChange={(e) => setText(e.target.value)}
-        className="w-full text-xs bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition" 
+        className="w-full text-xs bg-gray-50 border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition resize-none" 
       />
-      <button 
-        type="button" 
-        onClick={() => onSaveNote(text)}
-        title="Simpan Catatan"
-        className="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-center shadow-xs cursor-pointer transition flex-shrink-0"
-      >
-        <Check className="w-4 h-4" />
-      </button>
+      <div className="flex justify-end">
+        <button 
+          type="button" 
+          onClick={() => onSaveNote(text)}
+          className="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-xs cursor-pointer transition"
+        >
+          <Check className="w-3.5 h-3.5" />
+          <span>Simpan Catatan</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -960,7 +963,7 @@ export default function App() {
           </div>
         )}
 
-        {/* DASHBOARD ADMIN DIPERBAIKI / DIKEMASKINI SUPAYA LEBIH RAPI */}
+        {/* DASHBOARD ADMIN DENGAN TEXTAREA CATATAN LEBIH LUAS */}
         {currentUser && currentUser.role === 'admin' && (
           <div className="w-full max-w-7xl space-y-6">
             <div className="bg-gradient-to-r from-gray-900 via-emerald-950 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1183,6 +1186,7 @@ export default function App() {
                                       </button>
                                     </div>
 
+                                    {/* Kolom Catatan Admin Menggunakan Textarea */}
                                     <NoteInputWithButton 
                                       initialNote={docVal.note} 
                                       onSaveNote={(text) => handleAdminUpdateDocStatus(selectedClinic.id, listItem.key, docVal.status, text)} 
@@ -1230,12 +1234,12 @@ export default function App() {
 
                           {selectedClinic.visitRevision?.name && selectedClinic.visitRevision.name !== 'Belum diunggah' && (
                             <div className="space-y-3 pt-3 border-t border-gray-100">
-                              <input 
-                                type="text"
-                                placeholder="Tulis catatan perbaikan visitasi..."
+                              <textarea 
+                                rows="3"
+                                placeholder="Tulis catatan perbaikan visitasi secara detail di sini..."
                                 value={visitNoteInput}
                                 onChange={(e) => setVisitNoteInput(e.target.value)}
-                                className="w-full text-xs bg-white border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                                className="w-full text-xs bg-white border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none"
                               />
                               <div className="flex flex-col sm:flex-row gap-2.5">
                                 <button 
