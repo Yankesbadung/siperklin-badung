@@ -691,7 +691,6 @@ export default function App() {
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="font-bold text-base sm:text-xl text-emerald-900 tracking-tight">SIPERKLIN</span>
-                <span className="font-bold text-base sm:text-xl text-emerald-900 tracking-tight">Sistem Informasi Pendaftaran Rekomendasi Klinik</span>
                 <span className="bg-emerald-100 text-emerald-800 text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-200">v2.1</span>
               </div>
               <p className="text-[10px] sm:text-xs text-gray-500 font-medium hidden xs:block">Sistem Informasi Pendaftaran Rekomendasi Klinik</p>
